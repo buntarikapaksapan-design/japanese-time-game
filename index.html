@@ -303,6 +303,24 @@ import{getDatabase,ref,set,get,onValue,update,remove}from'https://www.gstatic.co
  
 const app=initializeApp({apiKey:"AIzaSyA_Vs6teseLHMfoO4qcWRFjN6tDFyYL6Ls",authDomain:"gamefor-student.firebaseapp.com",databaseURL:"https://gamefor-student-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"gamefor-student",storageBucket:"gamefor-student.firebasestorage.app",messagingSenderId:"1019963323516",appId:"1:1019963323516:web:b4c7fdf6e79301aed4c5f9"});
 const db=getDatabase(app);
+
+async function cleanOldRooms(){
+  try{
+    const snap=await get(ref(db,'rooms'));
+    if(!snap.exists())return;
+    const now=Date.now();
+    const limit=24*60*60*1000;
+    const tasks=[];
+    snap.forEach(child=>{
+      const room=child.val();
+      if(room.createdAt&&(now-room.createdAt)>limit){
+        tasks.push(remove(ref(db,'rooms/'+child.key)));
+      }
+    });
+    if(tasks.length>0){await Promise.all(tasks);console.log("ลบห้องเก่า "+tasks.length+" ห้องค่ะ");}
+  }catch(e){console.log('cleanup error',e);}
+}
+cleanOldRooms();
 const mp={roomId:null,playerId:'p_'+Math.random().toString(36).slice(2,8),isHost:false,unsubs:[],roomLevel:1};
 const rRef=(p='')=>ref(db,`rooms/${mp.roomId}${p}`);
 const pRef=(p='')=>ref(db,`rooms/${mp.roomId}/players/${mp.playerId}${p}`);
