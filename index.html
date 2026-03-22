@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌸 Japanese Time Game 🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#ff85a1;--pink-light:#ffc2d1;--pink-pale:#fff0f3;--pink-dark:#e8547a;--purple:#c77dff;--yellow:#ffd166;--mint:#95e1d3;--mint-dark:#3aafa9;--bg:#fff5f8;--card:#ffffff;--text:#4a3f5c;--text-light:#8a7b9b;--shadow:0 8px 32px rgba(255,133,161,0.18);--radius:24px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);overflow-x:hidden;}
+.float-deco{position:fixed;pointer-events:none;z-index:0;font-size:2rem;animation:floatAround linear infinite;opacity:0.18;}
+@keyframes floatAround{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-20px) rotate(10deg)}100%{transform:translateY(0) rotate(0)}}
+.confetti-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;overflow:hidden;}
+.confetti-piece{position:absolute;width:10px;height:10px;border-radius:50%;animation:confettiFall linear forwards;}
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.wrapper{max-width:680px;margin:0 auto;padding:20px 16px 60px;position:relative;z-index:1;}
+.header{text-align:center;padding:28px 0 16px;}
+.header h1{font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,var(--pink-dark),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;}
+.header p{color:var(--text-light);font-size:0.95rem;margin-top:6px;}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px 24px;margin-bottom:20px;border:2px solid var(--pink-light);animation:slideUp 0.4s ease;}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pusheen-svg{width:100px;height:100px;display:block;margin:0 auto;animation:bounce 2s ease-in-out infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.input-group{margin-bottom:18px;}
+.input-group label{display:block;font-weight:700;margin-bottom:8px;color:var(--pink-dark);font-size:1rem;}
+.input-group input{width:100%;padding:14px 18px;border:2.5px solid var(--pink-light);border-radius:16px;font-size:1.1rem;font-family:inherit;background:var(--pink-pale);color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.input-group input:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,133,161,0.15);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:50px;font-size:1rem;font-weight:800;font-family:inherit;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;}
+.btn:active{transform:scale(0.95);}
+.btn-pink{background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:white;box-shadow:0 4px 16px rgba(255,133,161,0.4);}
+.btn-pink:hover{box-shadow:0 6px 24px rgba(255,133,161,0.5);transform:translateY(-2px);}
+.btn-purple{background:linear-gradient(135deg,var(--purple),#9c42f5);color:white;box-shadow:0 4px 16px rgba(199,125,255,0.4);}
+.btn-purple:hover{transform:translateY(-2px);}
+.btn-mint{background:linear-gradient(135deg,var(--mint),var(--mint-dark));color:white;box-shadow:0 4px 16px rgba(149,225,211,0.4);}
+.btn-outline{background:transparent;border:2.5px solid var(--pink);color:var(--pink-dark);}
+.btn-outline:hover{background:var(--pink-pale);}
+.btn-sm{padding:9px 18px;font-size:0.85rem;}
+.btn-full{width:100%;justify-content:center;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+.mode-card{border:2.5px solid var(--pink-light);border-radius:20px;padding:20px 16px;cursor:pointer;text-align:center;transition:all 0.15s;background:var(--pink-pale);}
+.mode-card:hover{transform:translateY(-3px);border-color:var(--pink);}
+.mode-card.active{border-color:var(--pink-dark);background:linear-gradient(135deg,#fff0f3,#ffe4ef);}
+.mode-card .icon{font-size:2.2rem;}
+.mode-card h3{font-size:1rem;font-weight:800;margin:8px 0 4px;color:var(--pink-dark);}
+.mode-card p{font-size:0.78rem;color:var(--text-light);line-height:1.4;}
+.level-pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;justify-content:center;}
+.level-pill{padding:10px 20px;border-radius:50px;border:2.5px solid var(--pink-light);background:var(--pink-pale);cursor:pointer;font-weight:800;font-family:inherit;font-size:0.9rem;color:var(--text);transition:all 0.2s;}
+.level-pill.active{background:linear-gradient(135deg,var(--pink),var(--pink-dark));color:white;border-color:transparent;box-shadow:0 4px 12px rgba(255,133,161,0.35);}
+.mp-entry{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+.mp-divider{text-align:center;color:var(--text-light);font-size:0.85rem;margin:12px 0;font-weight:700;}
+.room-code-box{background:linear-gradient(135deg,var(--pink-pale),#f0d4ff);border:3px solid var(--pink);border-radius:20px;padding:20px;text-align:center;margin-bottom:20px;}
+.room-code-label{font-size:0.85rem;font-weight:700;color:var(--text-light);margin-bottom:6px;}
+.room-code-val{font-size:2.8rem;font-weight:900;letter-spacing:0.15em;color:var(--pink-dark);}
+.player-count-badge{display:inline-flex;align-items:center;gap:6px;background:var(--pink-pale);border:2px solid var(--pink-light);border-radius:50px;padding:6px 16px;font-size:0.85rem;font-weight:700;color:var(--pink-dark);margin-bottom:14px;}
+.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.game-stat{background:var(--pink-pale);border:2px solid var(--pink-light);border-radius:14px;padding:8px 14px;text-align:center;}
+.game-stat .label{font-size:0.7rem;color:var(--text-light);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.game-stat .value{font-size:1.3rem;font-weight:900;color:var(--pink-dark);}
+.timer-bar-wrap{background:var(--pink-pale);border-radius:50px;height:10px;overflow:hidden;margin-bottom:20px;}
+.timer-bar{height:100%;border-radius:50px;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width 0.1s linear;}
+.audio-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:20px;background:linear-gradient(135deg,#fff0f3,#f9e4ff);border:2.5px dashed var(--pink);border-radius:20px;cursor:pointer;font-size:1.1rem;font-weight:800;color:var(--pink-dark);font-family:inherit;margin-bottom:20px;transition:all 0.2s;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,133,161,0.3)}50%{box-shadow:0 0 0 8px rgba(255,133,161,0)}}
+.audio-btn:hover{background:linear-gradient(135deg,#ffe4ef,#f0d4ff);transform:scale(1.02);}
+.audio-icon{font-size:2rem;}
+.playing .audio-icon{animation:spinIcon 0.6s linear infinite;}
+@keyframes spinIcon{0%{transform:rotate(0) scale(1)}50%{transform:rotate(10deg) scale(1.1)}100%{transform:rotate(0) scale(1)}}
+.options-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px;}
+.option-btn{height:56px;padding:0 20px;border:2.5px solid var(--pink-light);border-radius:16px;background:var(--pink-pale);cursor:pointer;font-size:1.05rem;font-weight:800;font-family:inherit;color:var(--text);transition:all 0.18s;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;}
+.option-btn:hover{border-color:var(--pink);background:#fff0f3;transform:translateY(-2px);}
+.option-btn.correct{background:linear-gradient(135deg,#d4f5e9,#b0f0d8);border-color:#2ecc71;color:#1a6b44;animation:correctPop 0.3s ease;}
+.option-btn.wrong{background:linear-gradient(135deg,#fde8e8,#f5c2c2);border-color:#e74c3c;color:#8b1a1a;animation:shake 0.3s ease;}
+.option-btn:disabled{cursor:default;}
+@keyframes correctPop{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.arrange-area{margin-bottom:16px;}
+.arrange-label{font-size:0.85rem;font-weight:700;color:var(--text-light);margin-bottom:8px;}
+.arrange-words,.arrange-drop{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.arrange-drop{min-height:70px;border:2.5px dashed var(--pink);border-radius:16px;padding:10px 12px;background:var(--pink-pale);margin-bottom:12px;}
+.word-chip{display:inline-flex;align-items:center;justify-content:center;min-width:72px;height:52px;padding:0 14px;background:white;border:2px solid var(--pink-light);border-radius:14px;cursor:pointer;font-size:1rem;font-weight:800;color:var(--text);transition:all 0.15s;user-select:none;white-space:nowrap;}
+.word-chip:hover{border-color:var(--pink);background:var(--pink-pale);transform:translateY(-2px);}
+.word-chip.placed{opacity:0.35;pointer-events:none;transform:none;}
+.feedback{text-align:center;font-size:1.1rem;font-weight:800;padding:14px;border-radius:16px;margin-bottom:16px;animation:slideUp 0.3s ease;}
+.feedback.correct{background:linear-gradient(135deg,#d4f5e9,#b0f0d8);color:#1a6b44;}
+.feedback.wrong{background:linear-gradient(135deg,#fde8e8,#f5c2c2);color:#8b1a1a;}
+.answer-explain{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:2px solid #86efac;border-radius:14px;padding:12px 16px;margin-bottom:14px;font-size:0.9rem;color:#166534;}
+.streak-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,var(--yellow),#f5a623);color:white;padding:4px 12px;border-radius:50px;font-size:0.85rem;font-weight:800;}
+.progress-dots{display:flex;gap:6px;justify-content:center;margin:16px 0;flex-wrap:wrap;}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--pink-light);transition:background 0.3s;}
+.dot.done-correct{background:#2ecc71;}.dot.done-wrong{background:#e74c3c;}
+.dot.current{background:var(--pink);animation:dotPulse 1s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.results-stars{font-size:2.5rem;text-align:center;margin:12px 0;}
+.result-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1.5px solid var(--pink-light);font-size:0.9rem;}
+.result-row:last-child{border-bottom:none;}
+.result-row .label{color:var(--text-light);font-weight:600;}
+.result-row .val{font-weight:800;color:var(--pink-dark);}
+.lb-title{font-size:1.2rem;font-weight:900;color:var(--pink-dark);margin-bottom:14px;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;margin-bottom:8px;background:var(--pink-pale);border:2px solid var(--pink-light);}
+.lb-row:nth-child(1){background:linear-gradient(135deg,#fff3cd,#ffe082);border-color:#ffc107;}
+.lb-row:nth-child(2){background:linear-gradient(135deg,#e8e8e8,#d0d0d0);border-color:#aaa;}
+.lb-row:nth-child(3){background:linear-gradient(135deg,#fde5cc,#f5c49e);border-color:#f5a623;}
+.lb-rank{font-size:1.3rem;min-width:36px;text-align:center;}
+.lb-name{flex:1;font-weight:800;font-size:1rem;}
+.lb-score{font-weight:900;font-size:1.1rem;color:var(--pink-dark);}
+.lb-meta{font-size:0.75rem;color:var(--text-light);}
+.my-score-row{border:2.5px solid var(--pink) !important;background:linear-gradient(135deg,#fff0f3,#ffe4ef) !important;}
+.nav-tabs{display:flex;gap:8px;margin-bottom:20px;background:var(--pink-pale);border-radius:50px;padding:4px;border:2px solid var(--pink-light);}
+.nav-tab{flex:1;padding:10px;border-radius:50px;border:none;background:transparent;font-family:inherit;font-weight:700;font-size:0.85rem;cursor:pointer;color:var(--text-light);transition:all 0.2s;}
+.nav-tab.active{background:white;color:var(--pink-dark);box-shadow:0 2px 8px rgba(255,133,161,0.2);}
+.section-title{font-size:1.1rem;font-weight:900;color:var(--pink-dark);margin-bottom:12px;}
+.hidden{display:none!important;}
+.text-center{text-align:center;}
+.mt-12{margin-top:12px;}.mt-16{margin-top:16px;}
+.flex-gap{display:flex;gap:10px;}
+.context-banner{background:linear-gradient(135deg,#fff8e1,#fff3e0);border:2px solid #ffe082;border-radius:14px;padding:12px 16px;margin-bottom:14px;text-align:center;font-weight:700;color:#7c5c00;}
+.context-banner .ctx-emoji{font-size:1.6rem;display:block;margin-bottom:4px;}
+.context-banner .ctx-th{font-size:0.82rem;color:#a07820;}
+.score-popup{position:fixed;pointer-events:none;font-size:1.5rem;font-weight:900;color:var(--pink-dark);animation:scoreFly 1.2s ease forwards;z-index:9000;}
+@keyframes scoreFly{0%{transform:translateY(0) scale(0.5);opacity:1}100%{transform:translateY(-80px) scale(1.2);opacity:0}}
+.waiting-msg{text-align:center;color:var(--text-light);padding:10px;font-size:0.9rem;font-weight:700;}
+@media(max-width:480px){.mode-grid,.mp-entry{grid-template-columns:1fr;}.header h1{font-size:1.8rem;}.word-chip{min-width:60px;height:48px;font-size:0.9rem;padding:0 10px;}.option-btn{height:52px;}}
+</style>
+</head>
+<body>
+<div class="float-deco" style="top:5%;left:5%;animation-duration:4s;">🌸</div>
+<div class="float-deco" style="top:15%;right:8%;animation-duration:5s;font-size:1.5rem;">⭐</div>
+<div class="float-deco" style="top:40%;left:3%;animation-duration:6s;">🌺</div>
+<div class="float-deco" style="bottom:20%;right:5%;animation-duration:4.5s;font-size:1.2rem;">✨</div>
+<div class="float-deco" style="bottom:10%;left:8%;animation-duration:5.5s;">🍡</div>
+<div class="float-deco" style="top:60%;right:3%;animation-duration:3.8s;font-size:1.4rem;">🎀</div>
+<div class="confetti-container" id="confettiContainer"></div>
+ 
+<div class="wrapper">
+  <div class="header">
+    <h1>🌸 時間クイズ 🌸</h1>
+    <p>เกมทายเวลาภาษาญี่ปุ่น น่ารักสดใส!</p>
+  </div>
+ 
+  <!-- NAME -->
+  <div id="screenName" class="card">
+    <div class="text-center">
+      <svg class="pusheen-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="62" rx="32" ry="26" fill="#b0a8b9"/><ellipse cx="50" cy="38" rx="26" ry="22" fill="#c8c0d0"/>
+        <polygon points="26,22 20,8 34,18" fill="#b0a8b9"/><polygon points="74,22 80,8 66,18" fill="#b0a8b9"/>
+        <polygon points="28,21 23,12 33,18" fill="#f9b8c8"/><polygon points="72,21 77,12 67,18" fill="#f9b8c8"/>
+        <ellipse cx="40" cy="37" rx="5" ry="5" fill="#4a3f5c"/><ellipse cx="60" cy="37" rx="5" ry="5" fill="#4a3f5c"/>
+        <ellipse cx="41" cy="36" rx="2" ry="2" fill="white"/><ellipse cx="61" cy="36" rx="2" ry="2" fill="white"/>
+        <ellipse cx="50" cy="44" rx="3" ry="2" fill="#f9b8c8"/>
+        <path d="M46 47 Q50 51 54 47" fill="none" stroke="#9a849c" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="43" x2="38" y2="44" stroke="#9a849c" stroke-width="1"/><line x1="20" y1="47" x2="38" y2="46" stroke="#9a849c" stroke-width="1"/>
+        <line x1="80" y1="43" x2="62" y2="44" stroke="#9a849c" stroke-width="1"/><line x1="80" y1="47" x2="62" y2="46" stroke="#9a849c" stroke-width="1"/>
+        <path d="M82 72 Q95 60 90 82 Q85 90 78 85" fill="none" stroke="#b0a8b9" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="32" cy="84" rx="10" ry="7" fill="#b0a8b9"/><ellipse cx="68" cy="84" rx="10" ry="7" fill="#b0a8b9"/>
+        <polygon points="50,15 44,10 48,15" fill="#ff85a1"/><polygon points="50,15 56,10 52,15" fill="#ff85a1"/>
+        <circle cx="50" cy="15" r="3" fill="#ff6b8e"/>
+      </svg>
+    </div>
+    <h2 class="text-center section-title" style="justify-content:center;margin:14px 0 20px;">ใส่ชื่อเล่นของคุณ! 💕</h2>
+    <div class="input-group">
+      <label>🏷️ ชื่อเล่น (Nickname)</label>
+      <input type="text" id="nicknameInput" placeholder="เช่น ซากุระ, ฮานะ, มิมิ..." maxlength="20"/>
+    </div>
+    <button class="btn btn-pink btn-full" id="soloBtn">🎮 เล่นคนเดียว</button>
+    <div class="mp-divider">— หรือเล่นหลายคน —</div>
+    <div class="mp-entry">
+      <button class="btn btn-purple" onclick="doCreateRoom()">🏠 สร้างห้อง</button>
+      <button class="btn btn-mint" onclick="toggleJoin()">🚪 เข้าร่วมห้อง</button>
+    </div>
+    <div id="joinRoomArea" class="hidden" style="margin-top:14px;">
+      <div class="input-group" style="margin-bottom:10px;">
+        <label>🔑 รหัสห้อง</label>
+        <input type="text" id="joinCodeInput" placeholder="เช่น ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:0.2em;font-size:1.3rem;text-align:center;"/>
+      </div>
+      <button class="btn btn-mint btn-full" onclick="doJoinRoom()">เข้าห้อง 🚪</button>
+    </div>
+  </div>
+ 
+  <!-- SETUP SOLO -->
+  <div id="screenSetup" class="card hidden">
+    <div class="section-title">🎮 เลือกโหมด</div>
+    <div class="mode-grid">
+      <div class="mode-card" id="modePractice" onclick="selectMode('practice')">
+        <div class="icon">🌱</div><h3>โหมดฝึกหัด</h3><p>ไม่มีจับเวลา เล่นสบายๆ</p>
+      </div>
+      <div class="mode-card active" id="modeCompete" onclick="selectMode('compete')">
+        <div class="icon">⚡</div><h3>โหมดแข่งขัน</h3><p>จับเวลา! ยิ่งเร็วยิ่งได้แต้ม</p>
+      </div>
+    </div>
+    <div class="section-title mt-16">📊 เลือกระดับ</div>
+    <div class="level-pills">
+      <button class="level-pill active" id="lv1pill" onclick="selectLevel(1)">🕐 Lv.1 ทายชั่วโมง</button>
+      <button class="level-pill" id="lv2pill" onclick="selectLevel(2)">🕑 Lv.2 ชั่วโมง+นาที</button>
+      <button class="level-pill" id="lv3pill" onclick="selectLevel(3)">🧩 Lv.3 เรียงประโยค</button>
+    </div>
+    <div class="flex-gap mt-16">
+      <button class="btn btn-outline btn-sm" onclick="goToLeaderboard()">🏆 กระดานคะแนน</button>
+      <button class="btn btn-pink" style="flex:1" onclick="startGame()">เริ่มเกม! 🌸</button>
+    </div>
+    <button class="btn btn-outline btn-sm btn-full mt-12" onclick="showScreen('screenName')">← กลับ</button>
+  </div>
+ 
+  <!-- ROOM LOBBY -->
+  <div id="screenRoom" class="card hidden">
+    <div class="room-code-box">
+      <div class="room-code-label">รหัสห้อง — แชร์ให้เพื่อน! 🌸</div>
+      <div class="room-code-val" id="roomCodeDisplay">------</div>
+    </div>
+    <div style="text-align:center;margin-bottom:12px;">
+      <span class="player-count-badge">👥 ผู้เล่น: <span id="playerCount">1</span> คน</span>
+    </div>
+    <div id="hostSettings">
+      <div class="section-title">📊 เลือกระดับ (Host)</div>
+      <div class="level-pills" style="margin-bottom:12px;">
+        <button class="level-pill active" id="rlv1pill" onclick="setRoomLevel(1)">🕐 Lv.1</button>
+        <button class="level-pill" id="rlv2pill" onclick="setRoomLevel(2)">🕑 Lv.2</button>
+        <button class="level-pill" id="rlv3pill" onclick="setRoomLevel(3)">🧩 Lv.3</button>
+      </div>
+    </div>
+    <div class="lb-title">🌸 รายชื่อผู้เล่นในห้อง</div>
+    <div id="lobbyPlayers"></div>
+    <button class="btn btn-pink btn-full mt-12" id="startRoomBtn" onclick="hostStartGame()">▶ เริ่มเกม!</button>
+    <button class="btn btn-outline btn-sm btn-full mt-12" onclick="leaveRoom()">← ออกจากห้อง</button>
+  </div>
+ 
+  <!-- GAME -->
+  <div id="screenGame" class="hidden">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabGame" onclick="switchTab('game')">🎮 เกม</button>
+      <button class="nav-tab" id="tabLB" onclick="switchTab('lb')">🏆 กระดาน Live</button>
+    </div>
+    <div id="gameTab">
+      <div class="card">
+        <div class="game-header">
+          <div class="game-stat"><div class="label">ข้อ</div><div class="value" id="qNum">1/10</div></div>
+          <div class="game-stat"><div class="label">คะแนน</div><div class="value" id="scoreDisplay">0</div></div>
+          <div class="game-stat"><div class="label">Streak 🔥</div><div class="value" id="streakDisplay">0</div></div>
+          <div class="game-stat hidden" id="timerBox"><div class="label">เวลา ⏱</div><div class="value" id="timerDisplay">30</div></div>
+        </div>
+        <div id="timerBarWrap" class="timer-bar-wrap hidden"><div class="timer-bar" id="timerBar" style="width:100%"></div></div>
+        <div class="progress-dots" id="progressDots"></div>
+        <div id="questionArea"></div>
+        <div id="feedbackArea"></div>
+        <div id="nextBtnWrap" class="hidden text-center">
+          <button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>
+        </div>
+      </div>
+    </div>
+    <div id="lbTab" class="hidden">
+      <div class="card"><div class="lb-title">🏆 คะแนน Live</div><div id="lbList"></div></div>
+    </div>
+  </div>
+ 
+  <!-- SOLO RESULTS -->
+  <div id="screenResults" class="card hidden">
+    <div class="text-center">
+      <svg class="pusheen-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="62" rx="32" ry="26" fill="#b0a8b9"/><ellipse cx="50" cy="38" rx="26" ry="22" fill="#c8c0d0"/>
+        <polygon points="26,22 20,8 34,18" fill="#b0a8b9"/><polygon points="74,22 80,8 66,18" fill="#b0a8b9"/>
+        <polygon points="28,21 23,12 33,18" fill="#f9b8c8"/><polygon points="72,21 77,12 67,18" fill="#f9b8c8"/>
+        <ellipse cx="40" cy="37" rx="5" ry="5" fill="#4a3f5c"/><ellipse cx="60" cy="37" rx="5" ry="5" fill="#4a3f5c"/>
+        <ellipse cx="41" cy="36" rx="2" ry="2" fill="white"/><ellipse cx="61" cy="36" rx="2" ry="2" fill="white"/>
+        <ellipse cx="50" cy="44" rx="3" ry="2" fill="#f9b8c8"/>
+        <path d="M44 48 Q50 55 56 48" fill="none" stroke="#9a849c" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="20" y1="43" x2="38" y2="44" stroke="#9a849c" stroke-width="1"/><line x1="20" y1="47" x2="38" y2="46" stroke="#9a849c" stroke-width="1"/>
+        <line x1="80" y1="43" x2="62" y2="44" stroke="#9a849c" stroke-width="1"/><line x1="80" y1="47" x2="62" y2="46" stroke="#9a849c" stroke-width="1"/>
+        <path d="M82 72 Q95 60 90 82 Q85 90 78 85" fill="none" stroke="#b0a8b9" stroke-width="6" stroke-linecap="round"/>
+        <ellipse cx="32" cy="84" rx="10" ry="7" fill="#b0a8b9"/><ellipse cx="68" cy="84" rx="10" ry="7" fill="#b0a8b9"/>
+        <polygon points="50,15 44,10 48,15" fill="#ff85a1"/><polygon points="50,15 56,10 52,15" fill="#ff85a1"/>
+        <circle cx="50" cy="15" r="3" fill="#ff6b8e"/>
+        <text x="10" y="60" font-size="12">⭐</text><text x="78" y="25" font-size="10">✨</text><text x="5" y="30" font-size="10">🌸</text>
+      </svg>
+    </div>
+    <h2 class="text-center section-title" style="justify-content:center;">ผลลัพธ์ของคุณ! 🎉</h2>
+    <div class="results-stars" id="resultStars">⭐⭐⭐</div>
+    <div id="resultRows"></div>
+    <div class="flex-gap mt-16">
+      <button class="btn btn-outline" style="flex:1" onclick="goToSetup()">🔄 เล่นใหม่</button>
+      <button class="btn btn-pink" style="flex:1" onclick="goToLeaderboard()">🏆 ดูคะแนน</button>
+    </div>
+  </div>
+ 
+  <!-- MP RESULTS -->
+  <div id="screenMPResults" class="card hidden">
+    <h2 class="text-center section-title" style="justify-content:center;margin-bottom:8px;">🏆 ผลการแข่งขัน!</h2>
+    <div class="results-stars">🎉🌸🎉</div>
+    <div id="mpResultList"></div>
+    <button class="btn btn-purple btn-full mt-16" onclick="leaveRoom()">← ออกจากห้อง</button>
+  </div>
+ 
+  <!-- LEADERBOARD -->
+  <div id="screenLeaderboard" class="card hidden">
+    <div class="lb-title">🏆 กระดานคะแนนทั้งหมด</div>
+    <div id="lbFullList"></div>
+    <button class="btn btn-pink btn-full mt-16" onclick="goToSetup()">← กลับ</button>
+  </div>
+</div>
+ 
+<!-- FIREBASE -->
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getDatabase,ref,set,get,onValue,update,remove}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+ 
+const app=initializeApp({apiKey:"AIzaSyA_Vs6teseLHMfoO4qcWRFjN6tDFyYL6Ls",authDomain:"gamefor-student.firebaseapp.com",databaseURL:"https://gamefor-student-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"gamefor-student",storageBucket:"gamefor-student.firebasestorage.app",messagingSenderId:"1019963323516",appId:"1:1019963323516:web:b4c7fdf6e79301aed4c5f9"});
+const db=getDatabase(app);
+const mp={roomId:null,playerId:'p_'+Math.random().toString(36).slice(2,8),isHost:false,unsubs:[],roomLevel:1};
+const rRef=(p='')=>ref(db,`rooms/${mp.roomId}${p}`);
+const pRef=(p='')=>ref(db,`rooms/${mp.roomId}/players/${mp.playerId}${p}`);
+const detach=()=>{mp.unsubs.forEach(f=>f());mp.unsubs=[];};
+ 
+window._MP={
+  async createRoom(nick){
+    const code=Math.random().toString(36).slice(2,8).toUpperCase();
+    mp.roomId=code;mp.isHost=true;mp.roomLevel=1;
+    await set(rRef(),{host:mp.playerId,status:'waiting',level:1,mode:'compete',currentQuestion:-1,createdAt:Date.now()});
+    await set(pRef(),{nickname:nick,score:0,streak:0,answered:false,joinedAt:Date.now()});
+    document.getElementById('roomCodeDisplay').textContent=code;
+    document.getElementById('hostSettings').style.display='';
+    document.getElementById('startRoomBtn').classList.remove('hidden');
+    window.showScreen('screenRoom');
+    listenRoom();listenPlayers();
+  },
+  async joinRoom(nick,code){
+    mp.roomId=code;mp.isHost=false;
+    const snap=await get(rRef());
+    if(!snap.exists()){alert('ไม่พบห้องนี้ค่ะ 🌸');return;}
+    const room=snap.val();
+    if(room.status!=='waiting'){alert('เกมเริ่มแล้วค่ะ');return;}
+    await set(pRef(),{nickname:nick,score:0,streak:0,answered:false,joinedAt:Date.now()});
+    window._G.state.level=room.level;window._G.state.mode=room.mode;
+    window.selectLevel(room.level);window.selectMode(room.mode);
+    document.getElementById('roomCodeDisplay').textContent=code;
+    document.getElementById('hostSettings').style.display='none';
+    document.getElementById('startRoomBtn').classList.add('hidden');
+    window.showScreen('screenRoom');
+    listenRoom();listenPlayers();
+  },
+  async setLevel(l){
+    mp.roomLevel=l;window._G.state.level=l;window.selectLevel(l);
+    if(mp.roomId)await update(rRef(),{level:l});
+  },
+  async startGame(){
+    window._G.state.level=mp.roomLevel;
+    const qs=window._G.generateQs();
+    const s=qs.map(q=>q.type==='choice'
+      ?{type:'choice',speak:q.speak,answerText:q.answer.text,options:q.options.map(o=>({text:o.text,speak:o.speak||'',meaning:o.meaning||''}))}
+      :{type:'arrange',speak:q.speak,meaning:q.meaning,emoji:q.emoji||'💬',words:q.words,correct:q.correct});
+    const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
+    if(psnap.exists()){
+      const u={};Object.keys(psnap.val()).forEach(pid=>{u[`rooms/${mp.roomId}/players/${pid}/score`]=0;u[`rooms/${mp.roomId}/players/${pid}/streak`]=0;u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;});
+      await update(ref(db),u);
+    }
+    await update(rRef(),{status:'playing',questions:s,currentQuestion:0,questionStartedAt:Date.now()});
+  },
+  async nextQ(){
+    const next=window._G.state.current+1;
+    const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
+    if(psnap.exists()){const u={};Object.keys(psnap.val()).forEach(pid=>{u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;});await update(ref(db),u);}
+    if(next>=window._G.state.questions.length)await update(rRef(),{status:'finished'});
+    else await update(rRef(),{currentQuestion:next,questionStartedAt:Date.now()});
+  },
+  async submitAnswer(ok,pts){
+    const snap=await get(pRef());const cur=snap.exists()?snap.val():{score:0,streak:0};
+    await update(pRef(),{score:(cur.score||0)+pts,streak:ok?(cur.streak||0)+1:0,answered:true});
+  },
+  async leave(){
+    detach();
+    await remove(pRef()).catch(()=>{});
+    if(mp.isHost)await update(rRef(),{status:'finished'}).catch(()=>{});
+    mp.roomId=null;mp.isHost=false;window._G.isMP=false;
+    window.showScreen('screenSetup');
+  },
+  isHost:()=>mp.isHost
+};
+ 
+function listenRoom(){
+  let lastQuestion=-1;
+  const u=onValue(rRef(),snap=>{
+    if(!snap.exists())return;
+    const room=snap.val();
+    if(room.status==='playing'&&room.currentQuestion>=0){
+      const G=window._G;
+      const questionChanged=(room.currentQuestion!==lastQuestion);
+      lastQuestion=room.currentQuestion;
+      G.state.questions=room.questions||[];G.state.level=room.level;G.state.mode=room.mode;
+      G.state.current=room.currentQuestion;G.isMP=true;
+      G.state.questions.forEach(q=>{if(q.type==='choice'&&q.answerText)q.answer=q.options.find(o=>o.text===q.answerText)||q.options[0];});
+      window.showScreen('screenGame');window.switchTab('game');
+      // Re-render เฉพาะเมื่อเปลี่ยนข้อเท่านั้น ไม่งั้น Firebase update ทุกครั้งจะ reset หน้าจอ
+      if(questionChanged){
+        G.state.answered=false;
+        window.renderQ();
+      }
+    }
+    if(room.status==='finished'){detach();window.showScreen('screenMPResults');loadMPResults();}
+  });
+  mp.unsubs.push(u);
+}
+ 
+function listenPlayers(){
+  const u=onValue(ref(db,`rooms/${mp.roomId}/players`),snap=>{
+    const pl=snap.exists()?snap.val():{};
+    renderLobby(pl);renderLiveBoard(pl);
+    const c=document.getElementById('playerCount');if(c)c.textContent=Object.keys(pl).length;
+  });
+  mp.unsubs.push(u);
+}
+ 
+function renderLobby(pl){
+  const el=document.getElementById('lobbyPlayers');if(!el)return;
+  const list=Object.values(pl).sort((a,b)=>a.joinedAt-b.joinedAt);
+  const icons=['🌸','⭐','🍡','🎀','✨','🌺'];
+  el.innerHTML=list.map((p,i)=>`<div class="lb-row" style="margin-bottom:8px;"><div class="lb-rank">${icons[i]||'👤'}</div><div class="lb-name">${p.nickname}</div><div style="font-size:0.75rem;color:var(--text-light);">พร้อมแล้ว ✅</div></div>`).join('');
+}
+ 
+function renderLiveBoard(pl){
+  const el=document.getElementById('lbList');if(!el)return;
+  const list=Object.values(pl).sort((a,b)=>b.score-a.score);
+  const m=['🥇','🥈','🥉'];
+  el.innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank">${m[i]||(i+1)}</div><div><div class="lb-name">${p.nickname} ${p.answered?'✅':'⏳'}</div></div><div class="lb-score">${p.score||0}pt</div></div>`).join('');
+}
+ 
+async function loadMPResults(){
+  const snap=await get(ref(db,`rooms/${mp.roomId}/players`));if(!snap.exists())return;
+  const list=Object.values(snap.val()).sort((a,b)=>b.score-a.score);
+  const m=['🥇','🥈','🥉'];
+  document.getElementById('mpResultList').innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank" style="font-size:1.8rem;">${m[i]||(i+1)}</div><div class="lb-name" style="font-size:1.1rem;">${p.nickname}</div><div class="lb-score" style="font-size:1.2rem;">${p.score||0}pt</div></div>`).join('');
+  window.launchConfetti();
+}
+</script>
+ 
+<!-- MAIN GAME -->
+<script>
+const HOURS_JP=[
+  {text:'いちじ',speak:'いちじ',meaning:'01:00'},{text:'にじ',speak:'にじ',meaning:'02:00'},
+  {text:'さんじ',speak:'さんじ',meaning:'03:00'},{text:'よじ',speak:'よじ',meaning:'04:00'},
+  {text:'ごじ',speak:'ごじ',meaning:'05:00'},{text:'ろくじ',speak:'ろくじ',meaning:'06:00'},
+  {text:'しちじ',speak:'しちじ',meaning:'07:00'},{text:'はちじ',speak:'ハチジ',meaning:'08:00'},
+  {text:'くじ',speak:'くじ',meaning:'09:00'},{text:'じゅうじ',speak:'じゅうじ',meaning:'10:00'},
+  {text:'じゅういちじ',speak:'じゅういちじ',meaning:'11:00'},{text:'じゅうにじ',speak:'じゅうにじ',meaning:'12:00'},
+];
+const MINUTES_JP=[
+  {text:'ごふん',speak:'ごふん',meaning:'5 นาที'},{text:'じゅっぷん',speak:'じゅっぷん',meaning:'10 นาที'},
+  {text:'じゅうごふん',speak:'じゅうごふん',meaning:'15 นาที'},{text:'にじゅっぷん',speak:'にじゅっぷん',meaning:'20 นาที'},
+  {text:'さんじゅっぷん',speak:'さんじゅっぷん',meaning:'30 นาที'},{text:'よんじゅうごふん',speak:'よんじゅうごふん',meaning:'45 นาที'},
+];
+const SENTENCES_LV3=[
+  {speak:'しちじに ごはんを たべます',meaning:'กินข้าวเจ็ดโมง 🍚',emoji:'🍚',words:['しちじに','ごはんを','たべます'],correct:['しちじに','ごはんを','たべます']},
+  {speak:'ハチジに がっこうへ いきます',meaning:'ไปโรงเรียนแปดโมง 🏫',emoji:'🏫',words:['はちじに','がっこうへ','いきます'],correct:['はちじに','がっこうへ','いきます']},
+  {speak:'くじに おふろに はいります',meaning:'อาบน้ำเก้าโมง 🛁',emoji:'🛁',words:['くじに','おふろに','はいります'],correct:['くじに','おふろに','はいります']},
+  {speak:'じゅういちじに ねます',meaning:'นอนสิบเอ็ดโมง 😴',emoji:'😴',words:['じゅういちじに','ねます'],correct:['じゅういちじに','ねます']},
+  {speak:'ろくじに おきます',meaning:'ตื่นหกโมง ⏰',emoji:'⏰',words:['ろくじに','おきます'],correct:['ろくじに','おきます']},
+  {speak:'じゅうにじに ひるごはんを たべます',meaning:'กินข้าวเที่ยง 🍱',emoji:'🍱',words:['じゅうにじに','ひるごはんを','たべます'],correct:['じゅうにじに','ひるごはんを','たべます']},
+  {speak:'くじから じゅうじまで べんきょうします',meaning:'เรียนเก้าถึงสิบโมง 📖',emoji:'📖',words:['くじから','じゅうじまで','べんきょうします'],correct:['くじから','じゅうじまで','べんきょうします']},
+  {speak:'ハチジから ごじまで しごとします',meaning:'ทำงานแปดถึงห้าโมง 💼',emoji:'💼',words:['はちじから','ごじまで','しごとします'],correct:['はちじから','ごじまで','しごとします']},
+  {speak:'しちじから ハチジまで テレビを みます',meaning:'ดูทีวีเจ็ดถึงแปดโมง 📺',emoji:'📺',words:['しちじから','はちじまで','テレビを','みます'],correct:['しちじから','はちじまで','テレビを','みます']},
+  {speak:'いまは なんじ ですか',meaning:'ตอนนี้กี่โมง? 🕐',emoji:'🕐',words:['いまは','なんじ','ですか'],correct:['いまは','なんじ','ですか']},
+  {speak:'えいがは なんじから ですか',meaning:'หนังเริ่มกี่โมง? 🎬',emoji:'🎬',words:['えいがは','なんじから','ですか'],correct:['えいがは','なんじから','ですか']},
+  {speak:'ごじに かいものを します',meaning:'ช้อปปิ้งบ่ายห้าโมง 🛍️',emoji:'🛍️',words:['ごじに','かいものを','します'],correct:['ごじに','かいものを','します']},
+  {speak:'さんじに ともだちと あいます',meaning:'เจอเพื่อนบ่ายสามโมง 👫',emoji:'👫',words:['さんじに','ともだちと','あいます'],correct:['さんじに','ともだちと','あいます']},
+];
+ 
+const _G={state:{nickname:'',mode:'compete',level:1,questions:[],current:0,score:0,streak:0,results:[],timerInterval:null,timeLeft:30,timeMax:30,answered:false},isMP:false,generateQs:generateQuestions};
+window._G=_G;
+let leaderboard=JSON.parse(localStorage.getItem('jpTimeLB')||'[]');
+ 
+function shuffle(a){return[...a].sort(()=>Math.random()-0.5);}
+ 
+function generateQuestions(){
+  const s=_G.state;const qs=[];
+  if(s.level===1){
+    shuffle(HOURS_JP).slice(0,10).forEach(h=>{
+      const opts=shuffle([h,...shuffle(HOURS_JP.filter(x=>x!==h)).slice(0,3)]);
+      qs.push({type:'choice',speak:h.speak,answer:h,options:opts});
+    });
+  }else if(s.level===2){
+    for(let i=0;i<10;i++){
+      const h=HOURS_JP[~~(Math.random()*HOURS_JP.length)];
+      const m=MINUTES_JP[~~(Math.random()*MINUTES_JP.length)];
+      const aText=h.text+' '+m.text;const dists=[];
+      while(dists.length<3){
+        const dh=HOURS_JP[~~(Math.random()*HOURS_JP.length)];
+        const dm=MINUTES_JP[~~(Math.random()*MINUTES_JP.length)];
+        const dt=dh.text+' '+dm.text;
+        if(dt!==aText&&!dists.find(d=>d.text===dt))dists.push({text:dt,speak:dh.speak+' '+dm.speak,meaning:dh.meaning+' '+dm.meaning});
+      }
+      const correct={text:aText,speak:h.speak+' '+m.speak,meaning:h.meaning+' '+m.meaning};
+      qs.push({type:'choice',speak:correct.speak,answer:correct,options:shuffle([correct,...dists])});
+    }
+  }else{
+    shuffle(SENTENCES_LV3).slice(0,10).forEach(s=>{
+      const idx=shuffle([...Array(s.words.length).keys()]);
+      qs.push({type:'arrange',speak:s.speak,meaning:s.meaning,emoji:s.emoji||'💬',words:idx.map(i=>s.words[i]),correct:s.correct||s.words});
+    });
+  }
+  return qs;
+}
+ 
+function speak(text,opts={}){
+  return new Promise(res=>{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='ja-JP';u.rate=opts.rate||0.82;u.pitch=opts.pitch||(text.includes('ですか')?1.5:1.1);
+    const voices=speechSynthesis.getVoices();
+    const v=voices.find(v=>v.lang.startsWith('ja')&&v.name.toLowerCase().includes('female'))||voices.find(v=>v.lang.startsWith('ja'));
+    if(v)u.voice=v;u.onend=res;u.onerror=res;speechSynthesis.speak(u);
+  });
+}
+speechSynthesis.onvoiceschanged=()=>{};speechSynthesis.getVoices();
+ 
+window.speakQuestion=async function(t){
+  const b=document.getElementById('audioBtnEl');if(b)b.classList.add('playing');
+  await speak(t);if(b)b.classList.remove('playing');
+};
+ 
+window.showScreen=function(id){
+  ['screenName','screenSetup','screenRoom','screenGame','screenResults','screenMPResults','screenLeaderboard']
+    .forEach(s=>document.getElementById(s).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+};
+window.goToSetup=function(){clearTimer();_G.state.questions=[];showScreen('screenSetup');};
+window.goToLeaderboard=function(){showScreen('screenLeaderboard');renderFullLB();};
+ 
+document.getElementById('soloBtn').onclick=function(){
+  const nick=document.getElementById('nicknameInput').value.trim();
+  if(!nick){alert('ใส่ชื่อก่อนนะคะ 🌸');return;}
+  _G.state.nickname=nick;_G.isMP=false;showScreen('screenSetup');
+};
+ 
+window.doCreateRoom=function(){
+  const nick=document.getElementById('nicknameInput').value.trim();
+  if(!nick){alert('ใส่ชื่อก่อนนะคะ 🌸');return;}
+  _G.state.nickname=nick;
+  if(window._MP)window._MP.createRoom(nick);else alert('Firebase กำลังโหลด...');
+};
+window.toggleJoin=function(){document.getElementById('joinRoomArea').classList.toggle('hidden');};
+window.doJoinRoom=function(){
+  const nick=document.getElementById('nicknameInput').value.trim();
+  const code=document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  if(!nick){alert('ใส่ชื่อก่อนนะคะ 🌸');return;}
+  if(!code){alert('ใส่รหัสห้องด้วยนะคะ 🌸');return;}
+  _G.state.nickname=nick;
+  if(window._MP)window._MP.joinRoom(nick,code);else alert('Firebase กำลังโหลด...');
+};
+window.hostStartGame=function(){if(window._MP)window._MP.startGame();};
+window.leaveRoom=function(){if(window._MP)window._MP.leave();else showScreen('screenSetup');};
+window.setRoomLevel=function(l){
+  [1,2,3].forEach(n=>document.getElementById('rlv'+n+'pill').classList.toggle('active',n===l));
+  if(window._MP)window._MP.setLevel(l);
+};
+ 
+window.selectMode=function(m){
+  _G.state.mode=m;
+  document.getElementById('modePractice').classList.toggle('active',m==='practice');
+  document.getElementById('modeCompete').classList.toggle('active',m==='compete');
+};
+window.selectLevel=function(l){
+  _G.state.level=l;
+  [1,2,3].forEach(n=>{const el=document.getElementById('lv'+n+'pill');if(el)el.classList.toggle('active',n===l);});
+};
+ 
+window.startGame=function(){
+  const s=_G.state;s.questions=generateQuestions();s.current=0;s.score=0;s.streak=0;
+  s.results=[];s.answered=false;_G.isMP=false;
+  showScreen('screenGame');switchTab('game');renderQ();
+};
+ 
+window.renderQ=function(){
+  const s=_G.state;s.answered=false;clearTimer();
+  const q=s.questions[s.current];if(!q)return;
+  document.getElementById('qNum').textContent=`${s.current+1}/${s.questions.length}`;
+  document.getElementById('scoreDisplay').textContent=s.score;
+  document.getElementById('streakDisplay').textContent=s.streak;
+  document.getElementById('progressDots').innerHTML=s.questions.map((_,i)=>{
+    let c='dot';
+    if(i<s.current)c+=s.results[i]?.correct?' done-correct':' done-wrong';
+    else if(i===s.current)c+=' current';
+    return`<div class="${c}"></div>`;
+  }).join('');
+  const tBox=document.getElementById('timerBox');const tWrap=document.getElementById('timerBarWrap');
+  if(s.mode==='compete'){
+    tBox.classList.remove('hidden');tWrap.classList.remove('hidden');
+    s.timeMax=q.type==='arrange'?45:30;s.timeLeft=s.timeMax;updateTimer();startTimer();
+  }else{tBox.classList.add('hidden');tWrap.classList.add('hidden');}
+  document.getElementById('feedbackArea').innerHTML='';
+  document.getElementById('nextBtnWrap').classList.add('hidden');
+  if(q.type==='choice')renderChoice(q);else renderArrange(q);
+  setTimeout(()=>speakQuestion(q.speak),400);
+};
+ 
+function renderChoice(q){
+  document.getElementById('questionArea').innerHTML=`
+    <button class="audio-btn" id="audioBtnEl" onclick="speakQuestion('${q.speak.replace(/'/g,"\\'")}')">
+      <span class="audio-icon">🔊</span><span>กดฟังเสียงภาษาญี่ปุ่น</span>
+      <span style="font-size:0.8rem;color:var(--text-light);">（タップして聞く）</span>
+    </button>
+    <div class="options-grid" id="optionsGrid">
+      ${q.options.map((o,i)=>`<button class="option-btn" onclick="answerChoice(${i})">${o.text}</button>`).join('')}
+    </div>`;
+}
+ 
+function renderArrange(q){
+  const ctx=q.emoji?`<div class="context-banner"><span class="ctx-emoji">${q.emoji}</span><span class="ctx-th">${q.meaning}</span></div>`:'';
+  document.getElementById('questionArea').innerHTML=`${ctx}
+    <button class="audio-btn" id="audioBtnEl" onclick="speakQuestion('${q.speak.replace(/'/g,"\\'")}')">
+      <span class="audio-icon">🔊</span><span>กดฟังประโยค</span>
+      <span style="font-size:0.8rem;color:var(--text-light);">（タップして聞く）</span>
+    </button>
+    <div class="arrange-area">
+      <div class="arrange-label">วางคำให้ถูกลำดับ 👇</div>
+      <div class="arrange-drop" id="dropZone"></div>
+      <div class="arrange-label">คลิกคำเพื่อวาง / คลิกซ้ำเพื่อเอาออก</div>
+      <div class="arrange-words" id="wordBank">
+        ${q.words.map((w,i)=>`<div class="word-chip" id="chip${i}" data-word="${w}" data-idx="${i}" onclick="placeWord(this)">${w}</div>`).join('')}
+      </div>
+    </div>
+    <button class="btn btn-mint btn-full" onclick="checkArrange()">✅ ตรวจคำตอบ</button>`;
+  window._arr={ans:[],correct:q.correct,meaning:q.meaning};
+}
+window._arr={ans:[],correct:[],meaning:''};
+ 
+window.placeWord=function(el){
+  const w=el.dataset.word,idx=parseInt(el.dataset.idx);
+  const chip=document.getElementById('chip'+idx);const drop=document.getElementById('dropZone');
+  if(chip.classList.contains('placed')){
+    window._arr.ans=window._arr.ans.filter(x=>!(x.w===w&&x.i===idx));
+    chip.classList.remove('placed');
+    const ex=drop.querySelector(`[data-idx="${idx}"]`);if(ex)ex.remove();
+  }else{
+    chip.classList.add('placed');window._arr.ans.push({w,i:idx});
+    const p=document.createElement('div');p.className='word-chip';p.dataset.idx=idx;p.dataset.word=w;
+    p.innerHTML=chip.innerHTML;p.onclick=()=>placeWord(p);drop.appendChild(p);
+  }
+};
+ 
+window.checkArrange=function(){
+  const s=_G.state;if(s.answered)return;
+  const ok=JSON.stringify(window._arr.ans.map(x=>x.w))===JSON.stringify(window._arr.correct);
+  s.answered=true;clearTimer();
+  const pts=calcPts(ok,s);applyScore(ok,pts,s);
+  const fb=document.getElementById('feedbackArea');
+  if(ok){fb.innerHTML=`<div class="feedback correct">✅ ถูกต้อง! +${pts} คะแนน ${s.streak>=2?`<span class="streak-badge">🔥 Streak ${s.streak}!</span>`:''}</div>`;showScorePopup('+'+pts);if(s.streak>=3)launchConfetti();}
+  else fb.innerHTML=`<div class="feedback wrong">❌ ไม่ถูก! คำตอบที่ถูก: <b>${window._arr.correct.join(' ')}</b></div>`;
+  fb.innerHTML+=`<div class="answer-explain">💡 ความหมาย: ${window._arr.meaning}</div>`;
+  if(_G.isMP&&window._MP)window._MP.submitAnswer(ok,pts);
+  showNextBtn();
+};
+ 
+window.answerChoice=function(idx){
+  const s=_G.state;if(s.answered)return;
+  s.answered=true;clearTimer();
+  const q=s.questions[s.current];const chosen=q.options[idx];
+  const ok=chosen===q.answer||chosen.text===q.answer.text;
+  const pts=calcPts(ok,s);applyScore(ok,pts,s);
+  document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{
+    btn.disabled=true;const o=q.options[i];
+    if(o===q.answer||o.text===q.answer.text)btn.classList.add('correct');
+    else if(i===idx&&!ok)btn.classList.add('wrong');
+  });
+  const fb=document.getElementById('feedbackArea');
+  if(ok){fb.innerHTML=`<div class="feedback correct">✅ ถูกต้อง! +${pts} คะแนน ${s.streak>=2?`<span class="streak-badge">🔥 Streak ${s.streak}!</span>`:''}</div>`;showScorePopup('+'+pts);if(s.streak>=3)launchConfetti();}
+  else fb.innerHTML=`<div class="feedback wrong">❌ ไม่ถูก! คำตอบที่ถูก: <b>${q.answer.text}</b></div>`;
+  fb.innerHTML+=`<div class="answer-explain">💡 อ่านว่า: <b>${q.answer.speak||q.answer.text}</b> — ${q.answer.meaning||''}</div>`;
+  if(_G.isMP&&window._MP)window._MP.submitAnswer(ok,pts);
+  showNextBtn();
+};
+ 
+function calcPts(ok,s){if(!ok)return 0;return s.mode==='compete'?Math.max(10,~~(s.timeLeft/s.timeMax*100))+(s.streak>=3?20:0):100;}
+function applyScore(ok,pts,s){
+  if(ok){s.streak++;s.score+=pts;}else s.streak=0;
+  s.results.push({correct:ok,pts});
+  document.getElementById('scoreDisplay').textContent=s.score;
+  document.getElementById('streakDisplay').textContent=s.streak;
+}
+
+// ===== แก้ไขตรงนี้: showNextBtn =====
+function showNextBtn(){
+  const nw=document.getElementById('nextBtnWrap');
+  if(_G.isMP && window._MP){
+    if(window._MP.isHost()){
+      // โฮสต์เห็นปุ่มถัดไปเสมอ
+      nw.innerHTML='<button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>';
+    }else{
+      // ผู้เล่นทั่วไปรอโฮสต์
+      nw.innerHTML='<div class="waiting-msg">⏳ รอ host ไปข้อต่อไป...</div>';
+    }
+  }else{
+    // solo mode
+    nw.innerHTML='<button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>';
+  }
+  nw.classList.remove('hidden');
+}
+
+// ===== แก้ไขตรงนี้: nextQuestion =====
+window.nextQuestion=function(){
+  if(_G.isMP){
+    if(window._MP && window._MP.isHost()){
+      window._MP.nextQ();
+    }
+    // ไม่ต้อง renderQ ที่นี่ — Firebase listener จะ trigger renderQ ให้เอง
+    return;
+  }
+  // solo mode
+  const s=_G.state;s.current++;
+  if(s.current>=s.questions.length)endGame();else renderQ();
+};
+ 
+function startTimer(){
+  clearTimer();const s=_G.state;
+  s.timerInterval=setInterval(()=>{
+    s.timeLeft-=0.1;updateTimer();
+    if(s.timeLeft<=0){
+      s.timeLeft=0;updateTimer();clearTimer();
+      if(!s.answered){
+        s.answered=true;s.streak=0;s.results.push({correct:false,pts:0});
+        document.getElementById('streakDisplay').textContent=0;
+        const fb=document.getElementById('feedbackArea');
+        fb.innerHTML='<div class="feedback wrong">⏰ หมดเวลา! ไม่มีคะแนน</div>';
+        const q=s.questions[s.current];
+        if(q.type==='choice'){
+          document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{btn.disabled=true;if(q.options[i]===q.answer||q.options[i]?.text===q.answer?.text)btn.classList.add('correct');});
+          fb.innerHTML+=`<div class="answer-explain">💡 คำตอบ: <b>${q.answer.text}</b> — ${q.answer.meaning}</div>`;
+        }else fb.innerHTML+=`<div class="answer-explain">💡 ประโยคที่ถูก: ${window._arr.correct.join('　')}</div>`;
+        if(_G.isMP&&window._MP)window._MP.submitAnswer(false,0);
+        showNextBtn();
+      }
+    }
+  },100);
+}
+function updateTimer(){
+  const s=_G.state;
+  const el=document.getElementById('timerDisplay');if(el)el.textContent=Math.ceil(s.timeLeft);
+  const bar=document.getElementById('timerBar');if(bar)bar.style.width=(s.timeLeft/s.timeMax*100)+'%';
+}
+function clearTimer(){const s=_G.state;if(s.timerInterval){clearInterval(s.timerInterval);s.timerInterval=null;}}
+ 
+function endGame(){
+  clearTimer();const s=_G.state;
+  const correct=s.results.filter(r=>r.correct).length;const pct=~~(correct/s.questions.length*100);
+  let stars='⭐';if(pct>=80)stars='⭐⭐⭐';else if(pct>=50)stars='⭐⭐';
+  leaderboard.push({name:s.nickname,score:s.score,correct,total:s.questions.length,level:s.level,mode:s.mode,date:new Date().toLocaleDateString('th-TH')});
+  leaderboard.sort((a,b)=>b.score-a.score);if(leaderboard.length>50)leaderboard=leaderboard.slice(0,50);
+  localStorage.setItem('jpTimeLB',JSON.stringify(leaderboard));
+  document.getElementById('resultStars').textContent=stars;
+  document.getElementById('resultRows').innerHTML=`
+    <div class="result-row"><span class="label">👤 ชื่อ</span><span class="val">${s.nickname}</span></div>
+    <div class="result-row"><span class="label">⭐ คะแนน</span><span class="val">${s.score}</span></div>
+    <div class="result-row"><span class="label">✅ ถูก/ทั้งหมด</span><span class="val">${correct}/${s.questions.length} (${pct}%)</span></div>
+    <div class="result-row"><span class="label">📊 ระดับ</span><span class="val">Level ${s.level}</span></div>
+    <div class="result-row"><span class="label">🎮 โหมด</span><span class="val">${s.mode==='compete'?'แข่งขัน ⚡':'ฝึกหัด 🌱'}</span></div>`;
+  showScreen('screenResults');launchConfetti();
+}
+ 
+function renderLB(id){
+  const el=document.getElementById(id);if(!el)return;
+  if(!leaderboard.length){el.innerHTML='<div class="text-center" style="color:var(--text-light);padding:20px;">ยังไม่มีคะแนน 🌸</div>';return;}
+  const m=['🥇','🥈','🥉'];
+  el.innerHTML=leaderboard.slice(0,20).map((e,i)=>`<div class="lb-row"><div class="lb-rank">${m[i]||(i+1)}</div><div><div class="lb-name">${e.name}</div><div class="lb-meta">Lv.${e.level} ${e.mode==='compete'?'⚡':'🌱'} · ${e.correct}/${e.total} ถูก · ${e.date}</div></div><div class="lb-score">${e.score}pt</div></div>`).join('');
+}
+function renderFullLB(){renderLB('lbFullList');}
+ 
+window.switchTab=function(tab){
+  document.getElementById('gameTab').classList.toggle('hidden',tab!=='game');
+  document.getElementById('lbTab').classList.toggle('hidden',tab!=='lb');
+  document.getElementById('tabGame').classList.toggle('active',tab==='game');
+  document.getElementById('tabLB').classList.toggle('active',tab==='lb');
+  if(tab==='lb')renderLB('lbList');
+};
+ 
+window.launchConfetti=function(){
+  const c=document.getElementById('confettiContainer');
+  const cols=['#ff85a1','#ffd166','#95e1d3','#c77dff','#ff6b6b','#4ecdc4'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');p.className='confetti-piece';
+    p.style.left=Math.random()*100+'vw';p.style.background=cols[~~(Math.random()*cols.length)];
+    p.style.width=p.style.height=(8+Math.random()*8)+'px';p.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    p.style.animationDuration=(1.5+Math.random()*2)+'s';p.style.animationDelay=(Math.random()*0.8)+'s';
+    c.appendChild(p);setTimeout(()=>p.remove(),4000);
+  }
+};
+function showScorePopup(t){
+  const el=document.createElement('div');el.className='score-popup';el.textContent=t;
+  el.style.left=(30+Math.random()*40)+'vw';el.style.top='50vh';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1400);
+}
+ 
+showScreen('screenName');
+document.getElementById('nicknameInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('soloBtn').click();});
+</script>
+</body>
+</html>
