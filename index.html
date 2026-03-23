@@ -343,19 +343,25 @@ body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:1
     <h2 class="text-center section-title" style="justify-content:center;margin-bottom:8px;">🏆 ผลการแข่งขัน!</h2>
     <div class="results-stars">🎉🌸🎉</div>
     <div id="mpResultList"></div>
-    <!-- Host: next level options -->
+
+    <!-- Host: เลือก level ต่อไป -->
     <div id="hostNextOptions" class="next-level-box hidden">
-      <h3>🎮 เล่นต่อ? (Host เลือกได้เลย)</h3>
+      <h3>🎮 เล่นต่อ? เลือกด่าน (Host)</h3>
       <div class="level-pills" style="margin-bottom:14px;">
-        <button class="level-pill" id="nlv1pill" onclick="hostPlayNextLevel(1)">🕐 Lv.1</button>
-        <button class="level-pill" id="nlv2pill" onclick="hostPlayNextLevel(2)">🕑 Lv.2</button>
-        <button class="level-pill" id="nlv3pill" onclick="hostPlayNextLevel(3)">🧩 Lv.3</button>
+        <button class="level-pill" id="nlv1pill" onclick="hostPickLevel(1)">🕐 Lv.1</button>
+        <button class="level-pill" id="nlv2pill" onclick="hostPickLevel(2)">🕑 Lv.2</button>
+        <button class="level-pill" id="nlv3pill" onclick="hostPickLevel(3)">🧩 Lv.3</button>
       </div>
+      <div id="hostReadyStatus" style="font-size:0.85rem;color:var(--text-light);margin-bottom:10px;text-align:center;"></div>
+      <button class="btn btn-pink btn-full" id="hostStartNextBtn" onclick="hostStartNext()" style="display:none;">▶ เริ่มด่านต่อไป!</button>
     </div>
-    <!-- Guest: waiting -->
-    <div id="guestWaitNextMsg" class="hidden" style="margin-top:16px;">
-      <div class="waiting-msg">⏳ รอ Host เลือกเล่นด่านต่อไป...</div>
+
+    <!-- Guest/ทุกคน: ปุ่มพร้อม -->
+    <div id="readySection" class="hidden" style="margin-top:16px;">
+      <button class="btn btn-mint btn-full" id="readyBtn" onclick="playerReady()">✋ พร้อมเล่นต่อ!</button>
+      <div id="readyStatus" class="waiting-msg mt-12" style="display:none;"></div>
     </div>
+
     <button class="btn btn-outline btn-sm btn-full mt-12" onclick="leaveRoom()">← ออกจากห้อง</button>
   </div>
 
@@ -559,22 +565,11 @@ function listenRoom(){
     }
 
     if(room.status==='finished'){
-      // Don't detach here — loadMPResults will re-attach listeners for guests
       window.showScreen('screenMPResults');
       loadMPResults();
     }
-    if(room.status==='waiting'){
-      // Host restarted room for next round
-      document.getElementById('roomCodeDisplay').textContent=mp.roomId;
-      if(mp.isHost){
-        document.getElementById('hostSettings').style.display='';
-        document.getElementById('startRoomBtn').classList.remove('hidden');
-      }else{
-        document.getElementById('hostSettings').style.display='none';
-        document.getElementById('startRoomBtn').classList.add('hidden');
-      }
-      window.showScreen('screenRoom');
-    }
+
+    // status='playing' is handled above; 'finished' triggers results screen
   });
   mp.unsubs.push(u);
 }
@@ -642,70 +637,111 @@ function renderLiveBoard(pl){
 }
 
 async function loadMPResults(){
-  const roomSnap=await get(rRef()).catch(()=>null);
-  const snap=await get(ref(db,`rooms/${mp.roomId}/players`)).catch(()=>null);
-  if(!snap||!snap.exists())return;
-  const list=Object.values(snap.val()).sort((a,b)=>b.score-a.score);
-  const m=['🥇','🥈','🥉'];
-  document.getElementById('mpResultList').innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank" style="font-size:1.8rem;">${m[i]||(i+1)}</div><div class="lb-name" style="font-size:1.1rem;">${p.nickname}${p.isHost?' 👑':''}</div><div class="lb-score" style="font-size:1.2rem;">${p.score||0}pt</div></div>`).join('');
-
-  // Show host options / guest waiting
-  if(mp.isHost){
-    document.getElementById('hostNextOptions').classList.remove('hidden');
-    document.getElementById('guestWaitNextMsg').classList.add('hidden');
-    // Highlight current level
-    const curLevel=window._G.state.level||1;
-    [1,2,3].forEach(n=>document.getElementById('nlv'+n+'pill').classList.toggle('active',n===curLevel));
-  }else{
-    document.getElementById('hostNextOptions').classList.add('hidden');
-    document.getElementById('guestWaitNextMsg').classList.remove('hidden');
-    // Guest re-attaches listener to catch next round from host
-    detach();
-    listenRoom();
-    listenPlayers();
-  }
-  window.launchConfetti();
-}
-
-// Host picks next level and starts immediately (skips waiting — guests follow via listenRoom)
-window.hostPlayNextLevel=async function(level){
-  if(!mp.isHost)return;
-  mp.roomLevel=level;
-  window._G.state.level=level;
-
-  // Re-attach listeners first so host also catches the update
+  // Re-attach listeners so everyone (host+guest) is listening fresh
   detach();
   listenRoom();
   listenPlayers();
 
-  // Generate new questions
+  const snap=await get(ref(db,`rooms/${mp.roomId}/players`)).catch(()=>null);
+  if(!snap||!snap.exists())return;
+  const list=Object.values(snap.val()).sort((a,b)=>b.score-a.score);
+  const m=['🥇','🥈','🥉'];
+  document.getElementById('mpResultList').innerHTML=list.map((p,i)=>
+    `<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}">
+      <div class="lb-rank" style="font-size:1.8rem;">${m[i]||(i+1)}</div>
+      <div class="lb-name" style="font-size:1.1rem;">${p.nickname}${p.isHost?' 👑':''}</div>
+      <div class="lb-score" style="font-size:1.2rem;">${p.score||0}pt</div>
+    </div>`).join('');
+
+  // Reset ready flag for this player
+  await update(pRef(),{ready:false}).catch(()=>{});
+
+  if(mp.isHost){
+    document.getElementById('hostNextOptions').classList.remove('hidden');
+    document.getElementById('readySection').classList.remove('hidden');
+    const curLevel=window._G.state.level||1;
+    mp._nextLevel=curLevel;
+    [1,2,3].forEach(n=>document.getElementById('nlv'+n+'pill').classList.toggle('active',n===curLevel));
+  }else{
+    document.getElementById('hostNextOptions').classList.add('hidden');
+    document.getElementById('readySection').classList.remove('hidden');
+  }
+
+  // Listen for ready count
+  listenReadyCount();
+  window.launchConfetti();
+}
+
+let _readyUnsub=null;
+function listenReadyCount(){
+  if(_readyUnsub){_readyUnsub();_readyUnsub=null;}
+  _readyUnsub=onValue(ref(db,`rooms/${mp.roomId}/players`),snap=>{
+    if(!snap.exists())return;
+    const all=Object.values(snap.val());
+    const nonHost=all.filter(p=>!p.isHost);
+    const readyCnt=nonHost.filter(p=>p.ready).length;
+    const total=nonHost.length;
+    const allReady=total>0&&nonHost.every(p=>p.ready);
+
+    // Update status text (ทุกคนเห็น)
+    const rs=document.getElementById('readyStatus');
+    if(rs){rs.style.display='block';rs.textContent=`✋ พร้อมแล้ว ${readyCnt}/${total} คน`;}
+
+    if(mp.isHost){
+      const hs=document.getElementById('hostReadyStatus');
+      if(hs)hs.textContent=`ผู้เล่นพร้อม: ${readyCnt}/${total} คน`;
+      const btn=document.getElementById('hostStartNextBtn');
+      if(btn)btn.style.display=allReady?'flex':'none';
+    }
+  });
+}
+
+window.hostPickLevel=function(level){
+  mp._nextLevel=level;
+  [1,2,3].forEach(n=>document.getElementById('nlv'+n+'pill').classList.toggle('active',n===level));
+};
+
+window.playerReady=async function(){
+  const btn=document.getElementById('readyBtn');
+  if(btn){btn.disabled=true;btn.textContent='✅ พร้อมแล้ว!';}
+  await update(pRef(),{ready:true}).catch(()=>{});
+};
+
+window.hostStartNext=async function(){
+  if(!mp.isHost)return;
+  if(_readyUnsub){_readyUnsub();_readyUnsub=null;}
+
+  const level=mp._nextLevel||window._G.state.level||1;
+  mp.roomLevel=level;
   window._G.state.level=level;
+
+  // Generate questions
   const qs=window._G.generateQs();
   const s=qs.map(q=>q.type==='choice'
     ?{type:'choice',speak:q.speak,answerText:q.answer.text,options:q.options.map(o=>({text:o.text,speak:o.speak||'',meaning:o.meaning||''}))}
     :{type:'arrange',speak:q.speak,meaning:q.meaning,emoji:q.emoji||'💬',words:q.words,correct:q.correct});
 
-  // Reset all player scores
+  // Reset scores + ready
   const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
   if(psnap.exists()){
     const u={};Object.keys(psnap.val()).forEach(pid=>{
       u[`rooms/${mp.roomId}/players/${pid}/score`]=0;
       u[`rooms/${mp.roomId}/players/${pid}/streak`]=0;
       u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;
+      u[`rooms/${mp.roomId}/players/${pid}/ready`]=false;
     });
     await update(ref(db),u);
   }
 
-  // Go straight to playing — all guests will follow via onValue
+  // Push playing — listenRoom ของทุกคนที่ re-attach แล้วจะรับได้ทันที
   await update(rRef(),{
-    status:'playing',
-    level:level,
-    questions:s,
-    currentQuestion:0,
-    revealAnswer:false,
+    status:'playing',level:level,questions:s,
+    currentQuestion:0,revealAnswer:false,
     questionStartedAt:Date.now()
   });
 };
+
+// Host reveals then gets next button
 
 // Host reveals then gets next button
 window.hostRevealAndNext=async function(){
