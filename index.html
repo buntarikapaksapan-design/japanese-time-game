@@ -597,9 +597,6 @@ function listenPlayers(){
 function checkAllAnswered(pl){
   const G=window._G;
   if(!G.isMP||!mp.isHost)return;
-  const panel=document.getElementById('hostStatusPanel');
-  if(!panel)return;
-
   const players=Object.values(pl);
   const nonHostPlayers=players.filter(p=>!p.isHost);
   if(nonHostPlayers.length===0)return;
@@ -610,13 +607,22 @@ function checkAllAnswered(pl){
     `<div class="player-chip${p.answered?' answered':''}">${p.nickname}${p.answered?' ✅':' ⏳'}</div>`
   ).join('');
 
-  panel.innerHTML=`
-    <h3>👑 ${allDone?'ทุกคนตอบแล้ว! 🎉':`รอผู้เล่นตอบ... (${done}/${total})`}</h3>
-    <div class="player-answered-grid">${chips}</div>`;
-
   const nw=document.getElementById('nextBtnWrap');
+  if(!nw)return;
   if(allDone&&!_lastReveal){
-    nw.innerHTML=`<button class="btn btn-pink btn-full" onclick="hostRevealAndNext()">🔍 เฉลยคำตอบ!</button>`;
+    nw.innerHTML=`
+      <div class="host-view" id="hostStatusPanel">
+        <h3>👑 ทุกคนตอบแล้ว! 🎉</h3>
+        <div class="player-answered-grid">${chips}</div>
+      </div>
+      <button class="btn btn-pink btn-full mt-12" onclick="hostRevealAndNext()">🔍 เฉลยคำตอบ!</button>`;
+    nw.classList.remove('hidden');
+  }else if(!_lastReveal){
+    nw.innerHTML=`
+      <div class="host-view" id="hostStatusPanel">
+        <h3>👑 รอผู้เล่นตอบ... (${done}/${total})</h3>
+        <div class="player-answered-grid">${chips}</div>
+      </div>`;
     nw.classList.remove('hidden');
   }
 }
@@ -918,13 +924,14 @@ function renderHostView(q){
       <span>กดฟังเสียง — รอผู้เล่นตอบ 👑</span>
       <span style="font-size:0.8rem;color:var(--text-light);">（タップして聞く）</span>
     </button>
+`;
+  // Show status panel in nextBtnWrap from the start
+  document.getElementById('nextBtnWrap').innerHTML=`
     <div class="host-view" id="hostStatusPanel">
       <h3>👑 รอผู้เล่นตอบ... (0/0)</h3>
-      <div class="player-answered-grid" id="hostPlayerChips"></div>
+      <div class="player-answered-grid"></div>
     </div>`;
-  // nextBtnWrap stays hidden — checkAllAnswered will show it when everyone answers
-  document.getElementById('nextBtnWrap').classList.add('hidden');
-  document.getElementById('nextBtnWrap').innerHTML='';
+  document.getElementById('nextBtnWrap').classList.remove('hidden');
 }
 
 function renderChoice(q){
@@ -1052,8 +1059,7 @@ window.showMPReveal=function(){
       fb.innerHTML=`<div class="answer-explain">💡 ประโยคที่ถูก: <b>${(window._arr.correct||q.correct||[]).join(' ')}</b></div>`;
     }
     // Update status panel to show "revealed"
-    const panel=document.getElementById('hostStatusPanel');
-    if(panel)panel.innerHTML=`<h3>👑 เฉลยแล้ว — กดข้อต่อไปได้เลย!</h3>`;
+    // panel is now inside nextBtnWrap, will be replaced below
     // Host next button
     const nw=document.getElementById('nextBtnWrap');
     nw.innerHTML='<button class="btn btn-pink btn-full" onclick="nextQuestion()">ข้อต่อไป →</button>';
