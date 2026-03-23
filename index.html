@@ -70,9 +70,10 @@ body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:1
 @keyframes spinIcon{0%{transform:rotate(0) scale(1)}50%{transform:rotate(10deg) scale(1.1)}100%{transform:rotate(0) scale(1)}}
 .options-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px;}
 .option-btn{height:56px;padding:0 20px;border:2.5px solid var(--pink-light);border-radius:16px;background:var(--pink-pale);cursor:pointer;font-size:1.05rem;font-weight:800;font-family:inherit;color:var(--text);transition:all 0.18s;text-align:center;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;}
-.option-btn:hover{border-color:var(--pink);background:#fff0f3;transform:translateY(-2px);}
+.option-btn:hover:not(:disabled){border-color:var(--pink);background:#fff0f3;transform:translateY(-2px);}
 .option-btn.correct{background:linear-gradient(135deg,#d4f5e9,#b0f0d8);border-color:#2ecc71;color:#1a6b44;animation:correctPop 0.3s ease;}
 .option-btn.wrong{background:linear-gradient(135deg,#fde8e8,#f5c2c2);border-color:#e74c3c;color:#8b1a1a;animation:shake 0.3s ease;}
+.option-btn.selected{background:linear-gradient(135deg,#e8e4ff,#d4c8ff);border-color:#9c42f5;color:#4a3f5c;}
 .option-btn:disabled{cursor:default;}
 @keyframes correctPop{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -121,7 +122,14 @@ body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:1
 .context-banner .ctx-th{font-size:0.82rem;color:#a07820;}
 .score-popup{position:fixed;pointer-events:none;font-size:1.5rem;font-weight:900;color:var(--pink-dark);animation:scoreFly 1.2s ease forwards;z-index:9000;}
 @keyframes scoreFly{0%{transform:translateY(0) scale(0.5);opacity:1}100%{transform:translateY(-80px) scale(1.2);opacity:0}}
-.waiting-msg{text-align:center;color:var(--text-light);padding:10px;font-size:0.9rem;font-weight:700;}
+.waiting-msg{text-align:center;padding:16px;font-size:0.95rem;font-weight:700;background:linear-gradient(135deg,#fff8e1,#fff3e0);border:2px solid #ffe082;border-radius:14px;color:#7c5c00;}
+.waiting-progress{font-size:0.82rem;color:var(--text-light);margin-top:6px;}
+.host-view{background:linear-gradient(135deg,#f0d4ff,#e8d5ff);border:2.5px solid var(--purple);border-radius:20px;padding:20px;text-align:center;margin-bottom:16px;}
+.host-view h3{font-size:1.1rem;font-weight:900;color:#6b21a8;margin-bottom:8px;}
+.host-view p{font-size:0.88rem;color:#7c3aed;}
+.player-answered-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px;}
+.player-chip{padding:6px 14px;border-radius:50px;font-size:0.82rem;font-weight:700;border:2px solid var(--pink-light);background:white;color:var(--text-light);}
+.player-chip.answered{background:linear-gradient(135deg,#d4f5e9,#b0f0d8);border-color:#2ecc71;color:#1a6b44;}
 .user-bar{display:flex;align-items:center;gap:10px;background:var(--pink-pale);border:2px solid var(--pink-light);border-radius:50px;padding:6px 16px 6px 6px;margin-bottom:16px;}
 .user-bar img{width:36px;height:36px;border-radius:50%;border:2px solid var(--pink);}
 .user-bar .user-name{font-weight:800;font-size:0.9rem;color:var(--pink-dark);flex:1;}
@@ -130,6 +138,8 @@ body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:1
 .auth-loading{text-align:center;padding:40px 20px;color:var(--text-light);font-weight:700;}
 .auth-loading .spinner{width:40px;height:40px;border:4px solid var(--pink-light);border-top-color:var(--pink);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}
 @keyframes spin{to{transform:rotate(360deg)}}
+.next-level-box{background:linear-gradient(135deg,var(--pink-pale),#f0d4ff);border:2.5px solid var(--pink);border-radius:20px;padding:20px;margin-top:16px;text-align:center;}
+.next-level-box h3{font-size:1rem;font-weight:900;color:var(--pink-dark);margin-bottom:12px;}
 @media(max-width:480px){.mode-grid,.mp-entry{grid-template-columns:1fr;}.header h1{font-size:1.8rem;}.word-chip{min-width:60px;height:48px;font-size:0.9rem;padding:0 10px;}.option-btn{height:52px;}}
 </style>
 </head>
@@ -291,9 +301,7 @@ body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:1
         <div class="progress-dots" id="progressDots"></div>
         <div id="questionArea"></div>
         <div id="feedbackArea"></div>
-        <div id="nextBtnWrap" class="hidden text-center">
-          <button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>
-        </div>
+        <div id="nextBtnWrap" class="hidden text-center"></div>
       </div>
     </div>
     <div id="lbTab" class="hidden">
@@ -335,7 +343,20 @@ body{font-family:'Nunito','Sarabun',sans-serif;background:var(--bg);min-height:1
     <h2 class="text-center section-title" style="justify-content:center;margin-bottom:8px;">🏆 ผลการแข่งขัน!</h2>
     <div class="results-stars">🎉🌸🎉</div>
     <div id="mpResultList"></div>
-    <button class="btn btn-purple btn-full mt-16" onclick="leaveRoom()">← ออกจากห้อง</button>
+    <!-- Host: next level options -->
+    <div id="hostNextOptions" class="next-level-box hidden">
+      <h3>🎮 เล่นต่อ? (Host เลือกได้เลย)</h3>
+      <div class="level-pills" style="margin-bottom:14px;">
+        <button class="level-pill" id="nlv1pill" onclick="hostPlayNextLevel(1)">🕐 Lv.1</button>
+        <button class="level-pill" id="nlv2pill" onclick="hostPlayNextLevel(2)">🕑 Lv.2</button>
+        <button class="level-pill" id="nlv3pill" onclick="hostPlayNextLevel(3)">🧩 Lv.3</button>
+      </div>
+    </div>
+    <!-- Guest: waiting -->
+    <div id="guestWaitNextMsg" class="hidden" style="margin-top:16px;">
+      <div class="waiting-msg">⏳ รอ Host เลือกเล่นด่านต่อไป...</div>
+    </div>
+    <button class="btn btn-outline btn-sm btn-full mt-12" onclick="leaveRoom()">← ออกจากห้อง</button>
   </div>
 
   <!-- LEADERBOARD -->
@@ -357,7 +378,6 @@ const db=getDatabase(app);
 const auth=getAuth(app);
 const provider=new GoogleAuthProvider();
 
-// ===== Google Auth =====
 let currentUser=null;
 
 onAuthStateChanged(auth,(user)=>{
@@ -394,7 +414,6 @@ window.doLogout=function(){
   });
 };
 
-// ===== Clean old rooms =====
 async function cleanOldRooms(){
   try{
     const snap=await get(ref(db,'rooms'));
@@ -404,12 +423,11 @@ async function cleanOldRooms(){
       const room=child.val();
       if(room.createdAt&&(now-room.createdAt)>limit){tasks.push(remove(ref(db,'rooms/'+child.key)));}
     });
-    if(tasks.length>0){await Promise.all(tasks);console.log("ลบห้องเก่า "+tasks.length+" ห้อง");}
+    if(tasks.length>0)await Promise.all(tasks);
   }catch(e){console.log('cleanup error',e);}
 }
 cleanOldRooms();
 
-// ===== Multiplayer =====
 const mp={roomId:null,playerId:null,isHost:false,unsubs:[],roomLevel:1};
 function getPlayerId(){return currentUser?currentUser.uid:'anon_'+Math.random().toString(36).slice(2,8);}
 const rRef=(p='')=>ref(db,`rooms/${mp.roomId}${p}`);
@@ -422,7 +440,7 @@ window._MP={
     const code=Math.random().toString(36).slice(2,8).toUpperCase();
     mp.roomId=code;mp.isHost=true;mp.roomLevel=1;
     await set(rRef(),{host:mp.playerId,status:'waiting',level:1,mode:'compete',currentQuestion:-1,createdAt:Date.now()});
-    await set(pRef(),{nickname:nick,score:0,streak:0,answered:false,joinedAt:Date.now()});
+    await set(pRef(),{nickname:nick,score:0,streak:0,answered:false,isHost:true,joinedAt:Date.now()});
     document.getElementById('roomCodeDisplay').textContent=code;
     document.getElementById('hostSettings').style.display='';
     document.getElementById('startRoomBtn').classList.remove('hidden');
@@ -435,8 +453,8 @@ window._MP={
     const snap=await get(rRef());
     if(!snap.exists()){alert('ไม่พบห้องนี้ค่ะ 🌸');return;}
     const room=snap.val();
-    if(room.status!=='waiting'){alert('เกมเริ่มแล้วค่ะ');return;}
-    await set(pRef(),{nickname:nick,score:0,streak:0,answered:false,joinedAt:Date.now()});
+    if(room.status==='playing'){alert('เกมเริ่มแล้วค่ะ รอรอบหน้านะคะ');return;}
+    await set(pRef(),{nickname:nick,score:0,streak:0,answered:false,isHost:false,joinedAt:Date.now()});
     window._G.state.level=room.level;window._G.state.mode=room.mode;
     window.selectLevel(room.level);window.selectMode(room.mode);
     document.getElementById('roomCodeDisplay').textContent=code;
@@ -449,25 +467,40 @@ window._MP={
     mp.roomLevel=l;window._G.state.level=l;window.selectLevel(l);
     if(mp.roomId)await update(rRef(),{level:l});
   },
-  async startGame(){
-    window._G.state.level=mp.roomLevel;
+  async startGame(level){
+    const lvl=level||mp.roomLevel;
+    window._G.state.level=lvl;
     const qs=window._G.generateQs();
     const s=qs.map(q=>q.type==='choice'
       ?{type:'choice',speak:q.speak,answerText:q.answer.text,options:q.options.map(o=>({text:o.text,speak:o.speak||'',meaning:o.meaning||''}))}
       :{type:'arrange',speak:q.speak,meaning:q.meaning,emoji:q.emoji||'💬',words:q.words,correct:q.correct});
     const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
     if(psnap.exists()){
-      const u={};Object.keys(psnap.val()).forEach(pid=>{u[`rooms/${mp.roomId}/players/${pid}/score`]=0;u[`rooms/${mp.roomId}/players/${pid}/streak`]=0;u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;});
+      const u={};Object.keys(psnap.val()).forEach(pid=>{
+        u[`rooms/${mp.roomId}/players/${pid}/score`]=0;
+        u[`rooms/${mp.roomId}/players/${pid}/streak`]=0;
+        u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;
+      });
       await update(ref(db),u);
     }
-    await update(rRef(),{status:'playing',questions:s,currentQuestion:0,questionStartedAt:Date.now()});
+    await update(rRef(),{status:'playing',questions:s,currentQuestion:0,level:lvl,revealAnswer:false,questionStartedAt:Date.now()});
+  },
+  // Host reveals answer for all
+  async revealAnswer(){
+    await update(rRef(),{revealAnswer:true});
   },
   async nextQ(){
     const next=window._G.state.current+1;
     const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
-    if(psnap.exists()){const u={};Object.keys(psnap.val()).forEach(pid=>{u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;});await update(ref(db),u);}
-    if(next>=window._G.state.questions.length)await update(rRef(),{status:'finished'});
-    else await update(rRef(),{currentQuestion:next,questionStartedAt:Date.now()});
+    if(psnap.exists()){
+      const u={};Object.keys(psnap.val()).forEach(pid=>{u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;});
+      await update(ref(db),u);
+    }
+    if(next>=window._G.state.questions.length){
+      await update(rRef(),{status:'finished',revealAnswer:false});
+    }else{
+      await update(rRef(),{currentQuestion:next,revealAnswer:false,questionStartedAt:Date.now()});
+    }
   },
   async submitAnswer(ok,pts){
     const snap=await get(pRef());const cur=snap.exists()?snap.val():{score:0,streak:0};
@@ -480,25 +513,68 @@ window._MP={
     mp.roomId=null;mp.isHost=false;window._G.isMP=false;
     window.showScreen('screenSetup');
   },
+  getRoomId:()=>mp.roomId,
   isHost:()=>mp.isHost
 };
 
+// Track last seen question and reveal state
+let _lastQuestion=-1;
+let _lastReveal=false;
+let _allPlayersData={};
+
 function listenRoom(){
-  let lastQuestion=-1;
+  _lastQuestion=-1;_lastReveal=false;
   const u=onValue(rRef(),snap=>{
     if(!snap.exists())return;
     const room=snap.val();
+    const G=window._G;
+
     if(room.status==='playing'&&room.currentQuestion>=0){
-      const G=window._G;
-      const questionChanged=(room.currentQuestion!==lastQuestion);
-      lastQuestion=room.currentQuestion;
-      G.state.questions=room.questions||[];G.state.level=room.level;G.state.mode=room.mode;
-      G.state.current=room.currentQuestion;G.isMP=true;
-      G.state.questions.forEach(q=>{if(q.type==='choice'&&q.answerText)q.answer=q.options.find(o=>o.text===q.answerText)||q.options[0];});
-      window.showScreen('screenGame');window.switchTab('game');
-      if(questionChanged){G.state.answered=false;window.renderQ();}
+      const questionChanged=(room.currentQuestion!==_lastQuestion);
+      const revealChanged=(room.revealAnswer!==_lastReveal);
+      _lastReveal=room.revealAnswer||false;
+
+      if(questionChanged){
+        _lastQuestion=room.currentQuestion;
+        G.state.questions=room.questions||[];
+        G.state.level=room.level;
+        G.state.mode=room.mode||'compete';
+        G.state.current=room.currentQuestion;
+        G.state.answered=false;
+        G.state.pendingReveal=false;
+        G.isMP=true;
+        G.state.questions.forEach(q=>{
+          if(q.type==='choice'&&q.answerText)
+            q.answer=q.options.find(o=>o.text===q.answerText)||q.options[0];
+        });
+        window.showScreen('screenGame');
+        window.switchTab('game');
+        window.renderQ();
+      }
+
+      // When host triggers revealAnswer
+      if(revealChanged&&room.revealAnswer&&!questionChanged){
+        window.showMPReveal();
+      }
     }
-    if(room.status==='finished'){detach();window.showScreen('screenMPResults');loadMPResults();}
+
+    if(room.status==='finished'){
+      detach();
+      window.showScreen('screenMPResults');
+      loadMPResults();
+    }
+    if(room.status==='waiting'){
+      // Host restarted room for next round
+      document.getElementById('roomCodeDisplay').textContent=mp.roomId;
+      if(mp.isHost){
+        document.getElementById('hostSettings').style.display='';
+        document.getElementById('startRoomBtn').classList.remove('hidden');
+      }else{
+        document.getElementById('hostSettings').style.display='none';
+        document.getElementById('startRoomBtn').classList.add('hidden');
+      }
+      window.showScreen('screenRoom');
+    }
   });
   mp.unsubs.push(u);
 }
@@ -506,67 +582,188 @@ function listenRoom(){
 function listenPlayers(){
   const u=onValue(ref(db,`rooms/${mp.roomId}/players`),snap=>{
     const pl=snap.exists()?snap.val():{};
+    _allPlayersData=pl;
     renderLobby(pl);renderLiveBoard(pl);
     const c=document.getElementById('playerCount');if(c)c.textContent=Object.keys(pl).length;
+
+    // Check if all (non-host) players answered — show host the reveal button
+    if(window._G.isMP&&window._G.state.answered!==undefined){
+      checkAllAnswered(pl);
+    }
   });
   mp.unsubs.push(u);
+}
+
+function checkAllAnswered(pl){
+  const G=window._G;
+  if(!G.isMP||G.state.answered===undefined)return;
+  const players=Object.values(pl);
+  // Only count non-host players
+  const nonHostPlayers=players.filter(p=>!p.isHost);
+  if(nonHostPlayers.length===0)return;
+  const allDone=nonHostPlayers.every(p=>p.answered);
+  // Update waiting message
+  const nw=document.getElementById('nextBtnWrap');
+  if(!nw||nw.classList.contains('hidden'))return;
+
+  if(mp.isHost){
+    // Host sees progress and reveal button
+    const done=nonHostPlayers.filter(p=>p.answered).length;
+    const total=nonHostPlayers.length;
+    const chips=players.map(p=>`<div class="player-chip${p.answered?' answered':''}">${p.nickname}${p.answered?' ✅':' ⏳'}</div>`).join('');
+    if(allDone&&!_lastReveal){
+      nw.innerHTML=`
+        <div class="host-view">
+          <h3>👑 ทุกคนตอบแล้ว!</h3>
+          <div class="player-answered-grid">${chips}</div>
+        </div>
+        <button class="btn btn-pink btn-full mt-12" onclick="hostRevealAndNext()">🔍 เฉลยคำตอบ!</button>`;
+    }else if(!_lastReveal){
+      nw.innerHTML=`
+        <div class="host-view">
+          <h3>👑 รอผู้เล่นตอบ... (${done}/${total})</h3>
+          <div class="player-answered-grid">${chips}</div>
+        </div>`;
+    }
+  }
 }
 
 function renderLobby(pl){
   const el=document.getElementById('lobbyPlayers');if(!el)return;
   const list=Object.values(pl).sort((a,b)=>a.joinedAt-b.joinedAt);
   const icons=['🌸','⭐','🍡','🎀','✨','🌺'];
-  el.innerHTML=list.map((p,i)=>`<div class="lb-row" style="margin-bottom:8px;"><div class="lb-rank">${icons[i]||'👤'}</div><div class="lb-name">${p.nickname}</div><div style="font-size:0.75rem;color:var(--text-light);">พร้อมแล้ว ✅</div></div>`).join('');
+  el.innerHTML=list.map((p,i)=>`<div class="lb-row" style="margin-bottom:8px;"><div class="lb-rank">${icons[i]||'👤'}</div><div class="lb-name">${p.nickname}${p.isHost?' 👑':''}</div><div style="font-size:0.75rem;color:var(--text-light);">พร้อมแล้ว ✅</div></div>`).join('');
 }
 
 function renderLiveBoard(pl){
   const el=document.getElementById('lbList');if(!el)return;
   const list=Object.values(pl).sort((a,b)=>b.score-a.score);
   const m=['🥇','🥈','🥉'];
-  el.innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank">${m[i]||(i+1)}</div><div><div class="lb-name">${p.nickname} ${p.answered?'✅':'⏳'}</div></div><div class="lb-score">${p.score||0}pt</div></div>`).join('');
+  el.innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank">${m[i]||(i+1)}</div><div><div class="lb-name">${p.nickname}${p.isHost?' 👑':''} ${p.answered?'✅':'⏳'}</div></div><div class="lb-score">${p.score||0}pt</div></div>`).join('');
 }
 
 async function loadMPResults(){
-  const snap=await get(ref(db,`rooms/${mp.roomId}/players`));if(!snap.exists())return;
+  const roomSnap=await get(rRef()).catch(()=>null);
+  const snap=await get(ref(db,`rooms/${mp.roomId}/players`)).catch(()=>null);
+  if(!snap||!snap.exists())return;
   const list=Object.values(snap.val()).sort((a,b)=>b.score-a.score);
   const m=['🥇','🥈','🥉'];
-  document.getElementById('mpResultList').innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank" style="font-size:1.8rem;">${m[i]||(i+1)}</div><div class="lb-name" style="font-size:1.1rem;">${p.nickname}</div><div class="lb-score" style="font-size:1.2rem;">${p.score||0}pt</div></div>`).join('');
+  document.getElementById('mpResultList').innerHTML=list.map((p,i)=>`<div class="lb-row${p.nickname===window._G.state.nickname?' my-score-row':''}"><div class="lb-rank" style="font-size:1.8rem;">${m[i]||(i+1)}</div><div class="lb-name" style="font-size:1.1rem;">${p.nickname}${p.isHost?' 👑':''}</div><div class="lb-score" style="font-size:1.2rem;">${p.score||0}pt</div></div>`).join('');
+
+  // Show host options / guest waiting
+  if(mp.isHost){
+    document.getElementById('hostNextOptions').classList.remove('hidden');
+    document.getElementById('guestWaitNextMsg').classList.add('hidden');
+    // Highlight current level
+    const curLevel=window._G.state.level||1;
+    [1,2,3].forEach(n=>document.getElementById('nlv'+n+'pill').classList.toggle('active',n===curLevel));
+  }else{
+    document.getElementById('hostNextOptions').classList.add('hidden');
+    document.getElementById('guestWaitNextMsg').classList.remove('hidden');
+    // Guest listens for room to go back to waiting/playing
+    const waitU=onValue(rRef(),snap=>{
+      if(!snap.exists())return;
+      const r=snap.val();
+      if(r.status==='waiting'||r.status==='playing'){
+        waitU();// unsub
+      }
+    });
+  }
   window.launchConfetti();
 }
+
+// Host picks next level and restarts
+window.hostPlayNextLevel=async function(level){
+  if(!mp.isHost)return;
+  mp.roomLevel=level;
+  window._G.state.level=level;
+  // Reset player scores for new round
+  const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
+  if(psnap.exists()){
+    const u={};Object.keys(psnap.val()).forEach(pid=>{
+      u[`rooms/${mp.roomId}/players/${pid}/score`]=0;
+      u[`rooms/${mp.roomId}/players/${pid}/streak`]=0;
+      u[`rooms/${mp.roomId}/players/${pid}/answered`]=false;
+    });
+    await update(ref(db),u);
+  }
+  await update(rRef(),{status:'waiting',level:level,currentQuestion:-1,revealAnswer:false});
+  // Re-listen
+  detach();
+  listenRoom();
+  listenPlayers();
+};
+
+// Host reveals then gets next button
+window.hostRevealAndNext=async function(){
+  if(!mp.isHost)return;
+  await window._MP.revealAnswer();
+};
+
+window._allPlayersData=_allPlayersData;
 </script>
 
 <!-- MAIN GAME -->
 <script>
+// ===== CORRECTED DATA =====
 const HOURS_JP=[
-  {text:'いちじ',speak:'いちじ',meaning:'01:00'},{text:'にじ',speak:'にじ',meaning:'02:00'},
-  {text:'さんじ',speak:'さんじ',meaning:'03:00'},{text:'よじ',speak:'よじ',meaning:'04:00'},
-  {text:'ごじ',speak:'ごじ',meaning:'05:00'},{text:'ろくじ',speak:'ろくじ',meaning:'06:00'},
-  {text:'しちじ',speak:'しちじ',meaning:'07:00'},{text:'はちじ',speak:'ハチジ',meaning:'08:00'},
-  {text:'くじ',speak:'くじ',meaning:'09:00'},{text:'じゅうじ',speak:'じゅうじ',meaning:'10:00'},
-  {text:'じゅういちじ',speak:'じゅういちじ',meaning:'11:00'},{text:'じゅうにじ',speak:'じゅうにじ',meaning:'12:00'},
+  {text:'いちじ',  speak:'いちじ',     meaning:'01:00'},
+  {text:'にじ',    speak:'にじ',       meaning:'02:00'},
+  {text:'さんじ',  speak:'さんじ',     meaning:'03:00'},
+  {text:'よじ',    speak:'よじ',       meaning:'04:00'},
+  {text:'ごじ',    speak:'ごじ',       meaning:'05:00'},
+  {text:'ろくじ',  speak:'ろくじ',     meaning:'06:00'},
+  {text:'しちじ',  speak:'しちじ',     meaning:'07:00'},
+  {text:'はちじ',  speak:'はちじ',     meaning:'08:00'},
+  {text:'くじ',    speak:'くじ',       meaning:'09:00'},
+  {text:'じゅうじ',speak:'じゅうじ',   meaning:'10:00'},
+  {text:'じゅういちじ',speak:'じゅういちじ',meaning:'11:00'},
+  {text:'じゅうにじ',  speak:'じゅうにじ',  meaning:'12:00'},
 ];
 const MINUTES_JP=[
-  {text:'ごふん',speak:'ごふん',meaning:'5 นาที'},{text:'じゅっぷん',speak:'じゅっぷん',meaning:'10 นาที'},
-  {text:'じゅうごふん',speak:'じゅうごふん',meaning:'15 นาที'},{text:'にじゅっぷん',speak:'にじゅっぷん',meaning:'20 นาที'},
-  {text:'さんじゅっぷん',speak:'さんじゅっぷん',meaning:'30 นาที'},{text:'よんじゅうごふん',speak:'よんじゅうごふん',meaning:'45 นาที'},
+  {text:'ごふん',        speak:'ごふん',        meaning:'5 นาที'},
+  {text:'じゅっぷん',    speak:'じゅっぷん',    meaning:'10 นาที'},
+  {text:'じゅうごふん',  speak:'じゅうごふん',  meaning:'15 นาที'},
+  {text:'にじゅっぷん',  speak:'にじゅっぷん',  meaning:'20 นาที'},
+  {text:'さんじゅっぷん',speak:'さんじゅっぷん',meaning:'30 นาที'},
+  {text:'よんじゅうごふん',speak:'よんじゅうごふん',meaning:'45 นาที'},
 ];
 const SENTENCES_LV3=[
-  {speak:'しちじに ごはんを たべます',meaning:'กินข้าวเจ็ดโมง 🍚',emoji:'🍚',words:['しちじに','ごはんを','たべます'],correct:['しちじに','ごはんを','たべます']},
-  {speak:'ハチジに がっこうへ いきます',meaning:'ไปโรงเรียนแปดโมง 🏫',emoji:'🏫',words:['はちじに','がっこうへ','いきます'],correct:['はちじに','がっこうへ','いきます']},
-  {speak:'くじに おふろに はいります',meaning:'อาบน้ำเก้าโมง 🛁',emoji:'🛁',words:['くじに','おふろに','はいります'],correct:['くじに','おふろに','はいります']},
-  {speak:'じゅういちじに ねます',meaning:'นอนสิบเอ็ดโมง 😴',emoji:'😴',words:['じゅういちじに','ねます'],correct:['じゅういちじに','ねます']},
-  {speak:'ろくじに おきます',meaning:'ตื่นหกโมง ⏰',emoji:'⏰',words:['ろくじに','おきます'],correct:['ろくじに','おきます']},
-  {speak:'じゅうにじに ひるごはんを たべます',meaning:'กินข้าวเที่ยง 🍱',emoji:'🍱',words:['じゅうにじに','ひるごはんを','たべます'],correct:['じゅうにจに','ひるごはんを','たべます']},
-  {speak:'くじから じゅうじまで べんきょうします',meaning:'เรียนเก้าถึงสิบโมง 📖',emoji:'📖',words:['くじから','じゅうじまで','べんきょうします'],correct:['くじから','じゅうじまで','べんきょうします']},
-  {speak:'ハチジから ごじまで しごとします',meaning:'ทำงานแปดถึงห้าโมง 💼',emoji:'💼',words:['はちじから','ごじまで','しごとします'],correct:['はちじから','ごじまで','しごとします']},
-  {speak:'しちじから ハチジまで テレビを みます',meaning:'ดูทีวีเจ็ดถึงแปดโมง 📺',emoji:'📺',words:['しちじから','はちじまで','テレビを','みます'],correct:['しちじから','はちじまで','テレビを','みます']},
-  {speak:'いまは なんじ ですか',meaning:'ตอนนี้กี่โมง? 🕐',emoji:'🕐',words:['いまは','なんじ','ですか'],correct:['いまは','なんじ','ですか']},
-  {speak:'えいがは なんじから ですか',meaning:'หนังเริ่มกี่โมง? 🎬',emoji:'🎬',words:['えいがは','なんじから','ですか'],correct:['えいがは','なんじから','ですか']},
-  {speak:'ごじに かいものを します',meaning:'ช้อปปิ้งบ่ายห้าโมง 🛍️',emoji:'🛍️',words:['ごじに','かいものを','します'],correct:['ごじに','かいものを','します']},
-  {speak:'さんじに ともだちと あいます',meaning:'เจอเพื่อนบ่ายสามโมง 👫',emoji:'👫',words:['さんじに','ともだちと','あいます'],correct:['さんじに','ともだちと','あいます']},
+  {speak:'しちじに ごはんを たべます',   meaning:'กินข้าวเจ็ดโมง 🍚', emoji:'🍚',
+   words:['しちじに','ごはんを','たべます'],   correct:['しちじに','ごはんを','たべます']},
+  {speak:'はちじに がっこうへ いきます', meaning:'ไปโรงเรียนแปดโมง 🏫',emoji:'🏫',
+   words:['はちじに','がっこうへ','いきます'], correct:['はちじに','がっこうへ','いきます']},
+  {speak:'くじに おふろに はいります',   meaning:'อาบน้ำเก้าโมง 🛁',  emoji:'🛁',
+   words:['くじに','おふろに','はいります'],   correct:['くじに','おふろに','はいります']},
+  {speak:'じゅういちじに ねます',        meaning:'นอนสิบเอ็ดโมง 😴', emoji:'😴',
+   words:['じゅういちじに','ねます'],          correct:['じゅういちじに','ねます']},
+  {speak:'ろくじに おきます',            meaning:'ตื่นหกโมง ⏰',      emoji:'⏰',
+   words:['ろくじに','おきます'],              correct:['ろくじに','おきます']},
+  {speak:'じゅうにじに ひるごはんを たべます', meaning:'กินข้าวเที่ยง 🍱',emoji:'🍱',
+   words:['じゅうにじに','ひるごはんを','たべます'],correct:['じゅうにじに','ひるごはんを','たべます']},
+  {speak:'くじから じゅうじまで べんきょうします',meaning:'เรียนเก้าถึงสิบโมง 📖',emoji:'📖',
+   words:['くじから','じゅうじまで','べんきょうします'],correct:['くじから','じゅうじまで','べんきょうします']},
+  {speak:'はちじから ごじまで しごとします',meaning:'ทำงานแปดถึงห้าโมง 💼',emoji:'💼',
+   words:['はちじから','ごじまで','しごとします'],correct:['はちじから','ごじまで','しごとします']},
+  {speak:'しちじから はちじまで テレビを みます',meaning:'ดูทีวีเจ็ดถึงแปดโมง 📺',emoji:'📺',
+   words:['しちじから','はちじまで','テレビを','みます'],correct:['しちじから','はちじまで','テレビを','みます']},
+  {speak:'いまは なんじ ですか',         meaning:'ตอนนี้กี่โมง? 🕐',  emoji:'🕐',
+   words:['いまは','なんじ','ですか'],          correct:['いまは','なんじ','ですか']},
+  {speak:'えいがは なんじから ですか',   meaning:'หนังเริ่มกี่โมง? 🎬',emoji:'🎬',
+   words:['えいがは','なんじから','ですか'],    correct:['えいがは','なんじから','ですか']},
+  {speak:'ごじに かいものを します',     meaning:'ช้อปปิ้งบ่ายห้าโมง 🛍️',emoji:'🛍️',
+   words:['ごじに','かいものを','します'],      correct:['ごじに','かいものを','します']},
+  {speak:'さんじに ともだちと あいます', meaning:'เจอเพื่อนบ่ายสามโมง 👫',emoji:'👫',
+   words:['さんじに','ともだちと','あいます'],  correct:['さんじに','ともだちと','あいます']},
 ];
 
-const _G={state:{nickname:'',mode:'compete',level:1,questions:[],current:0,score:0,streak:0,results:[],timerInterval:null,timeLeft:30,timeMax:30,answered:false},isMP:false,generateQs:generateQuestions};
+const _G={
+  state:{nickname:'',mode:'compete',level:1,questions:[],current:0,score:0,streak:0,
+         results:[],timerInterval:null,timeLeft:30,timeMax:30,answered:false,
+         pendingReveal:false,selectedIdx:-1},
+  isMP:false,
+  generateQs:generateQuestions
+};
 window._G=_G;
 let leaderboard=JSON.parse(localStorage.getItem('jpTimeLB')||'[]');
 
@@ -588,7 +785,8 @@ function generateQuestions(){
         const dh=HOURS_JP[~~(Math.random()*HOURS_JP.length)];
         const dm=MINUTES_JP[~~(Math.random()*MINUTES_JP.length)];
         const dt=dh.text+' '+dm.text;
-        if(dt!==aText&&!dists.find(d=>d.text===dt))dists.push({text:dt,speak:dh.speak+' '+dm.speak,meaning:dh.meaning+' '+dm.meaning});
+        if(dt!==aText&&!dists.find(d=>d.text===dt))
+          dists.push({text:dt,speak:dh.speak+' '+dm.speak,meaning:dh.meaning+' '+dm.meaning});
       }
       const correct={text:aText,speak:h.speak+' '+m.speak,meaning:h.meaning+' '+m.meaning};
       qs.push({type:'choice',speak:correct.speak,answer:correct,options:shuffle([correct,...dists])});
@@ -596,7 +794,8 @@ function generateQuestions(){
   }else{
     shuffle(SENTENCES_LV3).slice(0,10).forEach(s=>{
       const idx=shuffle([...Array(s.words.length).keys()]);
-      qs.push({type:'arrange',speak:s.speak,meaning:s.meaning,emoji:s.emoji||'💬',words:idx.map(i=>s.words[i]),correct:s.correct||s.words});
+      qs.push({type:'arrange',speak:s.speak,meaning:s.meaning,emoji:s.emoji||'💬',
+               words:idx.map(i=>s.words[i]),correct:s.correct||s.words});
     });
   }
   return qs;
@@ -606,13 +805,17 @@ function speak(text,opts={}){
   return new Promise(res=>{
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text);
-    u.lang='ja-JP';u.rate=opts.rate||0.82;u.pitch=opts.pitch||(text.includes('ですか')?1.5:1.1);
+    u.lang='ja-JP';u.rate=opts.rate||0.82;
+    u.pitch=opts.pitch||(text.includes('ですか')?1.5:1.1);
     const voices=speechSynthesis.getVoices();
-    const v=voices.find(v=>v.lang.startsWith('ja')&&v.name.toLowerCase().includes('female'))||voices.find(v=>v.lang.startsWith('ja'));
-    if(v)u.voice=v;u.onend=res;u.onerror=res;speechSynthesis.speak(u);
+    const v=voices.find(v=>v.lang.startsWith('ja')&&v.name.toLowerCase().includes('female'))
+            ||voices.find(v=>v.lang.startsWith('ja'));
+    if(v)u.voice=v;u.onend=res;u.onerror=res;
+    speechSynthesis.speak(u);
   });
 }
-speechSynthesis.onvoiceschanged=()=>{};speechSynthesis.getVoices();
+speechSynthesis.onvoiceschanged=()=>{};
+speechSynthesis.getVoices();
 
 window.speakQuestion=async function(t){
   const b=document.getElementById('audioBtnEl');if(b)b.classList.add('playing');
@@ -620,7 +823,8 @@ window.speakQuestion=async function(t){
 };
 
 window.showScreen=function(id){
-  ['screenAuthLoading','screenLogin','screenName','screenSetup','screenRoom','screenGame','screenResults','screenMPResults','screenLeaderboard']
+  ['screenAuthLoading','screenLogin','screenName','screenSetup','screenRoom',
+   'screenGame','screenResults','screenMPResults','screenLeaderboard']
     .forEach(s=>document.getElementById(s).classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 };
@@ -672,7 +876,9 @@ window.startGame=function(){
 };
 
 window.renderQ=function(){
-  const s=_G.state;s.answered=false;clearTimer();
+  const s=_G.state;
+  s.answered=false;s.pendingReveal=false;s.selectedIdx=-1;
+  clearTimer();
   const q=s.questions[s.current];if(!q)return;
   document.getElementById('qNum').textContent=`${s.current+1}/${s.questions.length}`;
   document.getElementById('scoreDisplay').textContent=s.score;
@@ -683,16 +889,54 @@ window.renderQ=function(){
     else if(i===s.current)c+=' current';
     return`<div class="${c}"></div>`;
   }).join('');
-  const tBox=document.getElementById('timerBox');const tWrap=document.getElementById('timerBarWrap');
-  if(s.mode==='compete'){
+  const tBox=document.getElementById('timerBox');
+  const tWrap=document.getElementById('timerBarWrap');
+  // Timer only for solo compete, not MP (host controls pace)
+  const useTimer=s.mode==='compete'&&!_G.isMP;
+  if(useTimer){
     tBox.classList.remove('hidden');tWrap.classList.remove('hidden');
-    s.timeMax=q.type==='arrange'?45:30;s.timeLeft=s.timeMax;updateTimer();startTimer();
-  }else{tBox.classList.add('hidden');tWrap.classList.add('hidden');}
+    s.timeMax=q.type==='arrange'?45:30;s.timeLeft=s.timeMax;
+    updateTimer();startTimer();
+  }else{
+    tBox.classList.add('hidden');tWrap.classList.add('hidden');
+  }
   document.getElementById('feedbackArea').innerHTML='';
   document.getElementById('nextBtnWrap').classList.add('hidden');
-  if(q.type==='choice')renderChoice(q);else renderArrange(q);
+  document.getElementById('nextBtnWrap').innerHTML='';
+
+  // Host in MP: show audio + waiting panel (no answer options)
+  if(_G.isMP&&window._MP&&window._MP.isHost()){
+    renderHostView(q);
+  }else if(q.type==='choice'){
+    renderChoice(q);
+  }else{
+    renderArrange(q);
+  }
   setTimeout(()=>speakQuestion(q.speak),400);
 };
+
+// HOST VIEW: only audio button + player status
+function renderHostView(q){
+  const ctx=q.type==='arrange'&&q.emoji
+    ?`<div class="context-banner"><span class="ctx-emoji">${q.emoji}</span><span class="ctx-th">${q.meaning}</span></div>`:'';
+  document.getElementById('questionArea').innerHTML=`${ctx}
+    <button class="audio-btn" id="audioBtnEl" onclick="speakQuestion('${q.speak.replace(/'/g,"\\'")}')">
+      <span class="audio-icon">🔊</span>
+      <span>กดฟังเสียง (Host)</span>
+      <span style="font-size:0.8rem;color:var(--text-light);">（タップして聞く）</span>
+    </button>
+    <div class="host-view">
+      <h3>👑 รอผู้เล่นตอบ...</h3>
+      <div class="player-answered-grid" id="hostPlayerChips"></div>
+    </div>`;
+  // Show next button area (will be populated by checkAllAnswered)
+  document.getElementById('nextBtnWrap').classList.remove('hidden');
+  document.getElementById('nextBtnWrap').innerHTML=`
+    <div class="host-view">
+      <h3>👑 รอผู้เล่นตอบ... (0/0)</h3>
+      <div class="player-answered-grid"></div>
+    </div>`;
+}
 
 function renderChoice(q){
   document.getElementById('questionArea').innerHTML=`
@@ -701,7 +945,7 @@ function renderChoice(q){
       <span style="font-size:0.8rem;color:var(--text-light);">（タップして聞く）</span>
     </button>
     <div class="options-grid" id="optionsGrid">
-      ${q.options.map((o,i)=>`<button class="option-btn" onclick="answerChoice(${i})">${o.text}</button>`).join('')}
+      ${q.options.map((o,i)=>`<button class="option-btn" id="optBtn${i}" onclick="answerChoice(${i})">${o.text}</button>`).join('')}
     </div>`;
 }
 
@@ -720,14 +964,16 @@ function renderArrange(q){
         ${q.words.map((w,i)=>`<div class="word-chip" id="chip${i}" data-word="${w}" data-idx="${i}" onclick="placeWord(this)">${w}</div>`).join('')}
       </div>
     </div>
-    <button class="btn btn-mint btn-full" onclick="checkArrange()">✅ ตรวจคำตอบ</button>`;
+    <button class="btn btn-mint btn-full" id="checkArrangeBtn" onclick="checkArrange()">✅ ตรวจคำตอบ</button>`;
   window._arr={ans:[],correct:q.correct,meaning:q.meaning};
 }
 window._arr={ans:[],correct:[],meaning:''};
 
 window.placeWord=function(el){
+  const s=_G.state;if(s.answered)return;
   const w=el.dataset.word,idx=parseInt(el.dataset.idx);
-  const chip=document.getElementById('chip'+idx);const drop=document.getElementById('dropZone');
+  const chip=document.getElementById('chip'+idx);
+  const drop=document.getElementById('dropZone');
   if(chip.classList.contains('placed')){
     window._arr.ans=window._arr.ans.filter(x=>!(x.w===w&&x.i===idx));
     chip.classList.remove('placed');
@@ -743,35 +989,134 @@ window.checkArrange=function(){
   const s=_G.state;if(s.answered)return;
   const ok=JSON.stringify(window._arr.ans.map(x=>x.w))===JSON.stringify(window._arr.correct);
   s.answered=true;clearTimer();
-  const pts=calcPts(ok,s);applyScore(ok,pts,s);
-  const fb=document.getElementById('feedbackArea');
-  if(ok){fb.innerHTML=`<div class="feedback correct">✅ ถูกต้อง! +${pts} คะแนน ${s.streak>=2?`<span class="streak-badge">🔥 Streak ${s.streak}!</span>`:''}</div>`;showScorePopup('+'+pts);if(s.streak>=3)launchConfetti();}
-  else fb.innerHTML=`<div class="feedback wrong">❌ ไม่ถูก! คำตอบที่ถูก: <b>${window._arr.correct.join(' ')}</b></div>`;
-  fb.innerHTML+=`<div class="answer-explain">💡 ความหมาย: ${window._arr.meaning}</div>`;
-  if(_G.isMP&&window._MP)window._MP.submitAnswer(ok,pts);
-  showNextBtn();
+  // Disable check button
+  const cb=document.getElementById('checkArrangeBtn');if(cb)cb.disabled=true;
+  const pts=calcPts(ok,s);
+  applyScore(ok,pts,s);
+
+  if(_G.isMP&&window._MP){
+    // In MP: submit score, show "waiting" — no reveal yet
+    window._MP.submitAnswer(ok,pts);
+    s.pendingReveal=true;
+    // Store result for later reveal
+    s._lastOk=ok;s._lastPts=pts;
+    // Show muted "answered" state
+    document.getElementById('feedbackArea').innerHTML=
+      `<div class="waiting-msg">✅ ส่งคำตอบแล้ว รอเพื่อนคนอื่น...
+       <div class="waiting-progress">Host จะเฉลยเมื่อทุกคนตอบครบ</div></div>`;
+    document.getElementById('nextBtnWrap').innerHTML='';
+    document.getElementById('nextBtnWrap').classList.remove('hidden');
+  }else{
+    // Solo: show result immediately
+    showReveal(ok,pts,s,'arrange');
+    showNextBtn();
+  }
 };
 
 window.answerChoice=function(idx){
   const s=_G.state;if(s.answered)return;
-  s.answered=true;clearTimer();
-  const q=s.questions[s.current];const chosen=q.options[idx];
+  s.answered=true;s.selectedIdx=idx;clearTimer();
+  const q=s.questions[s.current];
+  const chosen=q.options[idx];
   const ok=chosen===q.answer||chosen.text===q.answer.text;
-  const pts=calcPts(ok,s);applyScore(ok,pts,s);
-  document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{
-    btn.disabled=true;const o=q.options[i];
-    if(o===q.answer||o.text===q.answer.text)btn.classList.add('correct');
-    else if(i===idx&&!ok)btn.classList.add('wrong');
-  });
-  const fb=document.getElementById('feedbackArea');
-  if(ok){fb.innerHTML=`<div class="feedback correct">✅ ถูกต้อง! +${pts} คะแนน ${s.streak>=2?`<span class="streak-badge">🔥 Streak ${s.streak}!</span>`:''}</div>`;showScorePopup('+'+pts);if(s.streak>=3)launchConfetti();}
-  else fb.innerHTML=`<div class="feedback wrong">❌ ไม่ถูก! คำตอบที่ถูก: <b>${q.answer.text}</b></div>`;
-  fb.innerHTML+=`<div class="answer-explain">💡 อ่านว่า: <b>${q.answer.speak||q.answer.text}</b> — ${q.answer.meaning||''}</div>`;
-  if(_G.isMP&&window._MP)window._MP.submitAnswer(ok,pts);
-  showNextBtn();
+  const pts=calcPts(ok,s);
+  applyScore(ok,pts,s);
+
+  if(_G.isMP&&window._MP){
+    // Highlight selected but don't reveal correct/wrong yet
+    document.querySelectorAll('#optionsGrid .option-btn').forEach(btn=>btn.disabled=true);
+    document.getElementById('optBtn'+idx)?.classList.add('selected');
+    window._MP.submitAnswer(ok,pts);
+    s.pendingReveal=true;
+    s._lastOk=ok;s._lastPts=pts;
+    document.getElementById('feedbackArea').innerHTML=
+      `<div class="waiting-msg">✅ ส่งคำตอบแล้ว รอเพื่อนคนอื่น...
+       <div class="waiting-progress">Host จะเฉลยเมื่อทุกคนตอบครบ</div></div>`;
+    document.getElementById('nextBtnWrap').innerHTML='';
+    document.getElementById('nextBtnWrap').classList.remove('hidden');
+  }else{
+    // Solo: reveal immediately
+    document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{
+      btn.disabled=true;
+      const o=q.options[i];
+      if(o===q.answer||o.text===q.answer.text)btn.classList.add('correct');
+      else if(i===idx&&!ok)btn.classList.add('wrong');
+    });
+    showReveal(ok,pts,s,'choice');
+    showNextBtn();
+  }
 };
 
-function calcPts(ok,s){if(!ok)return 0;return s.mode==='compete'?Math.max(10,~~(s.timeLeft/s.timeMax*100))+(s.streak>=3?20:0):100;}
+// Called by Firebase listener when host triggers revealAnswer
+window.showMPReveal=function(){
+  const s=_G.state;
+  if(!s.pendingReveal&&!window._MP.isHost())return;
+  const q=s.questions[s.current];
+  if(!q)return;
+
+  if(window._MP.isHost()){
+    // Host: show answer, then give next button
+    const fb=document.getElementById('feedbackArea');
+    if(q.type==='choice'){
+      document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{
+        btn.disabled=true;
+        const o=q.options[i];
+        if(o===q.answer||o.text===q.answer.text)btn.classList.add('correct');
+      });
+      fb.innerHTML=`<div class="answer-explain">💡 คำตอบ: <b>${q.answer.text}</b> — ${q.answer.meaning}</div>`;
+    }else{
+      fb.innerHTML=`<div class="answer-explain">💡 ประโยคที่ถูก: <b>${window._arr.correct.join(' ')}</b></div>`;
+    }
+    // Host next button
+    const nw=document.getElementById('nextBtnWrap');
+    nw.innerHTML='<button class="btn btn-pink btn-full" onclick="nextQuestion()">ข้อต่อไป →</button>';
+    nw.classList.remove('hidden');
+  }else{
+    // Player: now show correct/wrong reveal
+    const ok=s._lastOk||false;
+    const pts=s._lastPts||0;
+    if(q.type==='choice'){
+      document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{
+        btn.disabled=true;
+        const o=q.options[i];
+        if(o===q.answer||o.text===q.answer.text)btn.classList.add('correct');
+        else if(i===s.selectedIdx&&!ok)btn.classList.add('wrong');
+      });
+    }
+    showReveal(ok,pts,s,q.type==='choice'?'choice':'arrange');
+    // Player: waiting for host to advance
+    const nw=document.getElementById('nextBtnWrap');
+    nw.innerHTML='<div class="waiting-msg">⏳ รอ Host ไปข้อต่อไป...</div>';
+    nw.classList.remove('hidden');
+  }
+  s.pendingReveal=false;
+};
+
+function showReveal(ok,pts,s,type){
+  const q=s.questions[s.current];
+  const fb=document.getElementById('feedbackArea');
+  if(ok){
+    fb.innerHTML=`<div class="feedback correct">✅ ถูกต้อง! +${pts} คะแนน ${s.streak>=2?`<span class="streak-badge">🔥 Streak ${s.streak}!</span>`:''}</div>`;
+    showScorePopup('+'+pts);
+    if(s.streak>=3)launchConfetti();
+  }else{
+    if(type==='choice'){
+      fb.innerHTML=`<div class="feedback wrong">❌ ไม่ถูก! คำตอบที่ถูก: <b>${q.answer.text}</b></div>`;
+    }else{
+      fb.innerHTML=`<div class="feedback wrong">❌ ไม่ถูก! คำตอบที่ถูก: <b>${window._arr.correct.join(' ')}</b></div>`;
+    }
+  }
+  if(type==='choice'){
+    fb.innerHTML+=`<div class="answer-explain">💡 อ่านว่า: <b>${q.answer.speak||q.answer.text}</b> — ${q.answer.meaning||''}</div>`;
+  }else{
+    fb.innerHTML+=`<div class="answer-explain">💡 ความหมาย: ${window._arr.meaning}</div>`;
+  }
+}
+
+function calcPts(ok,s){
+  if(!ok)return 0;
+  return s.mode==='compete'?Math.max(10,~~(s.timeLeft/s.timeMax*100))+(s.streak>=3?20:0):100;
+}
 function applyScore(ok,pts,s){
   if(ok){s.streak++;s.score+=pts;}else s.streak=0;
   s.results.push({correct:ok,pts});
@@ -780,16 +1125,17 @@ function applyScore(ok,pts,s){
 }
 
 function showNextBtn(){
+  // Solo only
   const nw=document.getElementById('nextBtnWrap');
-  if(_G.isMP && window._MP){
-    if(window._MP.isHost()){nw.innerHTML='<button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>';}
-    else{nw.innerHTML='<div class="waiting-msg">⏳ รอ host ไปข้อต่อไป...</div>';}
-  }else{nw.innerHTML='<button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>';}
+  nw.innerHTML='<button class="btn btn-pink" onclick="nextQuestion()">ข้อต่อไป →</button>';
   nw.classList.remove('hidden');
 }
 
 window.nextQuestion=function(){
-  if(_G.isMP){if(window._MP&&window._MP.isHost()){window._MP.nextQ();}return;}
+  if(_G.isMP){
+    if(window._MP&&window._MP.isHost())window._MP.nextQ();
+    return;
+  }
   const s=_G.state;s.current++;
   if(s.current>=s.questions.length)endGame();else renderQ();
 };
@@ -801,16 +1147,21 @@ function startTimer(){
     if(s.timeLeft<=0){
       s.timeLeft=0;updateTimer();clearTimer();
       if(!s.answered){
-        s.answered=true;s.streak=0;s.results.push({correct:false,pts:0});
+        s.answered=true;s.streak=0;
+        s.results.push({correct:false,pts:0});
         document.getElementById('streakDisplay').textContent=0;
         const fb=document.getElementById('feedbackArea');
         fb.innerHTML='<div class="feedback wrong">⏰ หมดเวลา! ไม่มีคะแนน</div>';
         const q=s.questions[s.current];
         if(q.type==='choice'){
-          document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{btn.disabled=true;if(q.options[i]===q.answer||q.options[i]?.text===q.answer?.text)btn.classList.add('correct');});
+          document.querySelectorAll('#optionsGrid .option-btn').forEach((btn,i)=>{
+            btn.disabled=true;
+            if(q.options[i]===q.answer||q.options[i]?.text===q.answer?.text)btn.classList.add('correct');
+          });
           fb.innerHTML+=`<div class="answer-explain">💡 คำตอบ: <b>${q.answer.text}</b> — ${q.answer.meaning}</div>`;
-        }else fb.innerHTML+=`<div class="answer-explain">💡 ประโยคที่ถูก: ${window._arr.correct.join('　')}</div>`;
-        if(_G.isMP&&window._MP)window._MP.submitAnswer(false,0);
+        }else{
+          fb.innerHTML+=`<div class="answer-explain">💡 ประโยคที่ถูก: ${window._arr.correct.join('　')}</div>`;
+        }
         showNextBtn();
       }
     }
@@ -821,14 +1172,20 @@ function updateTimer(){
   const el=document.getElementById('timerDisplay');if(el)el.textContent=Math.ceil(s.timeLeft);
   const bar=document.getElementById('timerBar');if(bar)bar.style.width=(s.timeLeft/s.timeMax*100)+'%';
 }
-function clearTimer(){const s=_G.state;if(s.timerInterval){clearInterval(s.timerInterval);s.timerInterval=null;}}
+function clearTimer(){
+  const s=_G.state;
+  if(s.timerInterval){clearInterval(s.timerInterval);s.timerInterval=null;}
+}
 
 function endGame(){
   clearTimer();const s=_G.state;
-  const correct=s.results.filter(r=>r.correct).length;const pct=~~(correct/s.questions.length*100);
+  const correct=s.results.filter(r=>r.correct).length;
+  const pct=~~(correct/s.questions.length*100);
   let stars='⭐';if(pct>=80)stars='⭐⭐⭐';else if(pct>=50)stars='⭐⭐';
-  leaderboard.push({name:s.nickname,score:s.score,correct,total:s.questions.length,level:s.level,mode:s.mode,date:new Date().toLocaleDateString('th-TH')});
-  leaderboard.sort((a,b)=>b.score-a.score);if(leaderboard.length>50)leaderboard=leaderboard.slice(0,50);
+  leaderboard.push({name:s.nickname,score:s.score,correct,total:s.questions.length,
+                    level:s.level,mode:s.mode,date:new Date().toLocaleDateString('th-TH')});
+  leaderboard.sort((a,b)=>b.score-a.score);
+  if(leaderboard.length>50)leaderboard=leaderboard.slice(0,50);
   localStorage.setItem('jpTimeLB',JSON.stringify(leaderboard));
   document.getElementById('resultStars').textContent=stars;
   document.getElementById('resultRows').innerHTML=`
@@ -842,9 +1199,15 @@ function endGame(){
 
 function renderLB(id){
   const el=document.getElementById(id);if(!el)return;
-  if(!leaderboard.length){el.innerHTML='<div class="text-center" style="color:var(--text-light);padding:20px;">ยังไม่มีคะแนน 🌸</div>';return;}
+  if(!leaderboard.length){
+    el.innerHTML='<div class="text-center" style="color:var(--text-light);padding:20px;">ยังไม่มีคะแนน 🌸</div>';return;
+  }
   const m=['🥇','🥈','🥉'];
-  el.innerHTML=leaderboard.slice(0,20).map((e,i)=>`<div class="lb-row"><div class="lb-rank">${m[i]||(i+1)}</div><div><div class="lb-name">${e.name}</div><div class="lb-meta">Lv.${e.level} ${e.mode==='compete'?'⚡':'🌱'} · ${e.correct}/${e.total} ถูก · ${e.date}</div></div><div class="lb-score">${e.score}pt</div></div>`).join('');
+  el.innerHTML=leaderboard.slice(0,20).map((e,i)=>`
+    <div class="lb-row"><div class="lb-rank">${m[i]||(i+1)}</div>
+    <div><div class="lb-name">${e.name}</div>
+    <div class="lb-meta">Lv.${e.level} ${e.mode==='compete'?'⚡':'🌱'} · ${e.correct}/${e.total} ถูก · ${e.date}</div></div>
+    <div class="lb-score">${e.score}pt</div></div>`).join('');
 }
 function renderFullLB(){renderLB('lbFullList');}
 
@@ -861,12 +1224,16 @@ window.launchConfetti=function(){
   const cols=['#ff85a1','#ffd166','#95e1d3','#c77dff','#ff6b6b','#4ecdc4'];
   for(let i=0;i<60;i++){
     const p=document.createElement('div');p.className='confetti-piece';
-    p.style.left=Math.random()*100+'vw';p.style.background=cols[~~(Math.random()*cols.length)];
-    p.style.width=p.style.height=(8+Math.random()*8)+'px';p.style.borderRadius=Math.random()>0.5?'50%':'2px';
-    p.style.animationDuration=(1.5+Math.random()*2)+'s';p.style.animationDelay=(Math.random()*0.8)+'s';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=cols[~~(Math.random()*cols.length)];
+    p.style.width=p.style.height=(8+Math.random()*8)+'px';
+    p.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    p.style.animationDuration=(1.5+Math.random()*2)+'s';
+    p.style.animationDelay=(Math.random()*0.8)+'s';
     c.appendChild(p);setTimeout(()=>p.remove(),4000);
   }
 };
+
 function showScorePopup(t){
   const el=document.createElement('div');el.className='score-popup';el.textContent=t;
   el.style.left=(30+Math.random()*40)+'vw';el.style.top='50vh';
@@ -874,7 +1241,9 @@ function showScorePopup(t){
 }
 
 showScreen('screenAuthLoading');
-document.getElementById('nicknameInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('soloBtn').click();});
+document.getElementById('nicknameInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter')document.getElementById('soloBtn').click();
+});
 </script>
 </body>
 </html>
