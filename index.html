@@ -559,7 +559,7 @@ function listenRoom(){
     }
 
     if(room.status==='finished'){
-      detach();
+      // Don't detach here — loadMPResults will re-attach listeners for guests
       window.showScreen('screenMPResults');
       loadMPResults();
     }
@@ -659,24 +659,33 @@ async function loadMPResults(){
   }else{
     document.getElementById('hostNextOptions').classList.add('hidden');
     document.getElementById('guestWaitNextMsg').classList.remove('hidden');
-    // Guest listens for room to go back to waiting/playing
-    const waitU=onValue(rRef(),snap=>{
-      if(!snap.exists())return;
-      const r=snap.val();
-      if(r.status==='waiting'||r.status==='playing'){
-        waitU();// unsub
-      }
-    });
+    // Guest re-attaches listener to catch next round from host
+    detach();
+    listenRoom();
+    listenPlayers();
   }
   window.launchConfetti();
 }
 
-// Host picks next level and restarts
+// Host picks next level and starts immediately (skips waiting — guests follow via listenRoom)
 window.hostPlayNextLevel=async function(level){
   if(!mp.isHost)return;
   mp.roomLevel=level;
   window._G.state.level=level;
-  // Reset player scores for new round
+
+  // Re-attach listeners first so host also catches the update
+  detach();
+  listenRoom();
+  listenPlayers();
+
+  // Generate new questions
+  window._G.state.level=level;
+  const qs=window._G.generateQs();
+  const s=qs.map(q=>q.type==='choice'
+    ?{type:'choice',speak:q.speak,answerText:q.answer.text,options:q.options.map(o=>({text:o.text,speak:o.speak||'',meaning:o.meaning||''}))}
+    :{type:'arrange',speak:q.speak,meaning:q.meaning,emoji:q.emoji||'💬',words:q.words,correct:q.correct});
+
+  // Reset all player scores
   const psnap=await get(ref(db,`rooms/${mp.roomId}/players`));
   if(psnap.exists()){
     const u={};Object.keys(psnap.val()).forEach(pid=>{
@@ -686,11 +695,16 @@ window.hostPlayNextLevel=async function(level){
     });
     await update(ref(db),u);
   }
-  await update(rRef(),{status:'waiting',level:level,currentQuestion:-1,revealAnswer:false});
-  // Re-listen
-  detach();
-  listenRoom();
-  listenPlayers();
+
+  // Go straight to playing — all guests will follow via onValue
+  await update(rRef(),{
+    status:'playing',
+    level:level,
+    questions:s,
+    currentQuestion:0,
+    revealAnswer:false,
+    questionStartedAt:Date.now()
+  });
 };
 
 // Host reveals then gets next button
